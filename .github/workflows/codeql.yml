@@ -1,42 +1,21 @@
-name: CodeQL
+name: C/C++ CI
 
 on:
   push:
-    branches: [main]
+    branches: [ "main" ]
   pull_request:
-    branches: [main]
-
-permissions:
-  contents: write
-  security-events: write
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
-  analyze:
-    name: Analyze
+  build:
+
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
-      - name: Verify Directory Structure
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "Listing root directory:"
-          ls -la
-          echo "Listing PatchMAX directory:"
-          ls -la .
-      - name: Initialize the CodeQL tools
-        uses: github/codeql-action/init@v2
-        with:
-          languages: cpp, python
-
-      - name: Build with CMake
-        run: |
-          cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" -Wno-dev Cmake/
-          make
-        working-directory: Build/
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+    - name: make
+      run: |
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" -Wno-dev Build/Cmake
+        make -j10

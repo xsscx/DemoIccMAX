@@ -1,0 +1,124 @@
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+.xcuserstate
+
+# CMake Files
+*.cmake
+*.check_cache
+*.make
+*1.ts
+*.marks
+
+# Binary Files or Libs
+*.d
+
+# Icon must end with two \r
+Icon
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Xcode
+## Build generated
+DerivedData/
+## Various settings
+xcuserdata/
+## Other
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+*.hmap
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+!default.pbxuser
+!default.mode1v3
+!default.mode2v3
+!default.perspectivev3
+
+# Swift Package Manager
+# SwiftPM Packages
+Packages
+# Package-resolved
+Package.resolved
+
+# CocoaPods
+Pods/
+
+# Carthage
+Carthage/Build/
+
+# Accio dependency management
+Dependencies/
+.accio/
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# Bundle artifacts
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Personal settings
+.idea/
+.vscode/
+*.xcworkspace/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+.eggs/
+
+# Logs
+*.log
+
+# Virtual Environment
+venv/
+env/
+
+# Backup files
+*.bak
+*.swp
+*~
+
+# Node
+node_modules/
+npm-debug.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace

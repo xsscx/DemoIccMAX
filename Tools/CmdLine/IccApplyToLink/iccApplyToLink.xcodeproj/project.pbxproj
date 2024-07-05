@@ -1,0 +1,721 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		74BC043353D944BAA65B7BF4 /* ALL_BUILD */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = DD8CFCAE64EB48788368DA6E /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */;
+			buildPhases = (
+				5F0050DDAD8C3E7B6AF4A698 /* Generate CMakeFiles/ALL_BUILD */,
+			);
+			dependencies = (
+				67D2C1A242744E379045F265 /* PBXTargetDependency */,
+				D7667EC963554422B9B9DA8F /* PBXTargetDependency */,
+			);
+			name = ALL_BUILD;
+			productName = ALL_BUILD;
+		};
+		89B429D6621E440283A27DB0 /* ZERO_CHECK */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 7888E8EA007749B2955D5665 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */;
+			buildPhases = (
+				9CAEE1A3C8392EBEC286A720 /* Generate CMakeFiles/ZERO_CHECK */,
+			);
+			dependencies = (
+			);
+			name = ZERO_CHECK;
+			productName = ZERO_CHECK;
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXBuildFile section */
+		DAF434CEAA9946B9B29B8EEE /* /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/iccApplyToLink.cpp */ = {isa = PBXBuildFile; fileRef = 7257EE0C7E434636A79D0FC8 /* /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/iccApplyToLink.cpp */; };
+		E1BBF21680554CFB9515D820 /* /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = FADE6E2298E345C79D73D511 /* /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/CMakeLists.txt */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildStyle section */
+		1C82E9058AF14E2E8AD05168 /* Debug */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = Debug;
+		};
+		4C9E110E2070466EB83567B1 /* MinSizeRel */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = MinSizeRel;
+		};
+		C916D603355846F5837B0849 /* RelWithDebInfo */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = RelWithDebInfo;
+		};
+		E73721BC9EB1405B85DFE9BF /* Release */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = Release;
+		};
+/* End PBXBuildStyle section */
+
+/* Begin PBXContainerItemProxy section */
+		580F9F594F9645AD9ABE1F36 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C91A50263E1F4D39B069EA00 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2444ABA32250491C914A5D5B;
+			remoteInfo = iccApplyToLink;
+		};
+		5EE6D347971642F49BC41504 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C91A50263E1F4D39B069EA00 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 89B429D6621E440283A27DB0;
+			remoteInfo = ZERO_CHECK;
+		};
+		D50FADC8DCAA4F59895F310C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C91A50263E1F4D39B069EA00 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 89B429D6621E440283A27DB0;
+			remoteInfo = ZERO_CHECK;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		2A1922D10EE448A080B4A940 /* /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		7257EE0C7E434636A79D0FC8 /* /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/iccApplyToLink.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = iccApplyToLink.cpp; path = iccApplyToLink.cpp; sourceTree = SOURCE_ROOT; };
+		CC2406C80E1C4E3C90EE2019 /* iccApplyToLink */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = iccApplyToLink; sourceTree = BUILT_PRODUCTS_DIR; };
+		FADE6E2298E345C79D73D511 /* /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0C3159B3F6424B7BB3FF20E7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0F17CB8DEA2143269521897E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		8A663BB23EA34A8DAE6C89B4 /* ALL_BUILD */ = {
+			isa = PBXGroup;
+			children = (
+				F424E1DE5D6D44FCB95A2042 /* CMake Rules */,
+				2A1922D10EE448A080B4A940 /* /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/CMakeLists.txt */,
+			);
+			name = ALL_BUILD;
+			sourceTree = "<group>";
+		};
+		BA43261EF0964A769D6CEC01 /* Source Files */ = {
+			isa = PBXGroup;
+			children = (
+				7257EE0C7E434636A79D0FC8 /* /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/iccApplyToLink.cpp */,
+			);
+			name = "Source Files";
+			sourceTree = "<group>";
+		};
+		BB67A0607C7F47ED8EE47818 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CC2406C80E1C4E3C90EE2019 /* iccApplyToLink */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BD194F2BED274DFA85DBD577 /* iccApplyToLink */ = {
+			isa = PBXGroup;
+			children = (
+				BA43261EF0964A769D6CEC01 /* Source Files */,
+				FADE6E2298E345C79D73D511 /* /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/CMakeLists.txt */,
+			);
+			name = iccApplyToLink;
+			sourceTree = "<group>";
+		};
+		E9D2BBBE58D14D0689A0DC54 = {
+			isa = PBXGroup;
+			children = (
+				BD194F2BED274DFA85DBD577 /* iccApplyToLink */,
+				8A663BB23EA34A8DAE6C89B4 /* ALL_BUILD */,
+				BB67A0607C7F47ED8EE47818 /* Products */,
+				0F17CB8DEA2143269521897E /* Frameworks */,
+				F6D95ADFA16F4B73A222ABA8 /* Resources */,
+			);
+			sourceTree = "<group>";
+		};
+		F424E1DE5D6D44FCB95A2042 /* CMake Rules */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "CMake Rules";
+			sourceTree = "<group>";
+		};
+		F6D95ADFA16F4B73A222ABA8 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2444ABA32250491C914A5D5B /* iccApplyToLink */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F0BDB1F1953F405A9A05E4E4 /* Build configuration list for PBXNativeTarget "iccApplyToLink" */;
+			buildPhases = (
+				758FD8FAD40041119A5B54DB /* Sources */,
+				0C3159B3F6424B7BB3FF20E7 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CD3845E6691C4B178C50FEF8 /* PBXTargetDependency */,
+			);
+			name = iccApplyToLink;
+			productName = iccApplyToLink;
+			productReference = CC2406C80E1C4E3C90EE2019 /* iccApplyToLink */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C91A50263E1F4D39B069EA00 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1540;
+			};
+			buildConfigurationList = 078B7A0EDA564449B9FA2219 /* Build configuration list for PBXProject "iccApplyToLink" */;
+			buildSettings = {
+			};
+			buildStyles = (
+				1C82E9058AF14E2E8AD05168 /* Debug */,
+				E73721BC9EB1405B85DFE9BF /* Release */,
+				4C9E110E2070466EB83567B1 /* MinSizeRel */,
+				C916D603355846F5837B0849 /* RelWithDebInfo */,
+			);
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 0;
+			mainGroup = E9D2BBBE58D14D0689A0DC54;
+			projectDirPath = .;
+			projectRoot = "";
+			targets = (
+				74BC043353D944BAA65B7BF4 /* ALL_BUILD */,
+				89B429D6621E440283A27DB0 /* ZERO_CHECK */,
+				2444ABA32250491C914A5D5B /* iccApplyToLink */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		3C0110FC8322DE7E50886E21 = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here
+exit 0";
+			showEnvVarsInLog = 0;
+		};
+		5F0050DDAD8C3E7B6AF4A698 /* Generate CMakeFiles/ALL_BUILD */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Generate CMakeFiles/ALL_BUILD";
+			outputPaths = (
+/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/CMakeFiles/ALL_BUILD			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e
+if test \"$CONFIGURATION\" = \"Debug\"; then :
+  cd /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink
+  echo Build\\ all\\ projects
+fi
+if test \"$CONFIGURATION\" = \"Release\"; then :
+  cd /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink
+  echo Build\\ all\\ projects
+fi
+if test \"$CONFIGURATION\" = \"MinSizeRel\"; then :
+  cd /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink
+  echo Build\\ all\\ projects
+fi
+if test \"$CONFIGURATION\" = \"RelWithDebInfo\"; then :
+  cd /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink
+  echo Build\\ all\\ projects
+fi
+";
+			showEnvVarsInLog = 0;
+		};
+		9B50530E35CC49C82C2FACCF = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here
+exit 0";
+			showEnvVarsInLog = 0;
+		};
+		9CAEE1A3C8392EBEC286A720 /* Generate CMakeFiles/ZERO_CHECK */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Generate CMakeFiles/ZERO_CHECK";
+			outputPaths = (
+/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/CMakeFiles/ZERO_CHECK			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e
+if test \"$CONFIGURATION\" = \"Debug\"; then :
+  cd /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink
+  make -f /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/CMakeScripts/ReRunCMake.make
+fi
+if test \"$CONFIGURATION\" = \"Release\"; then :
+  cd /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink
+  make -f /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/CMakeScripts/ReRunCMake.make
+fi
+if test \"$CONFIGURATION\" = \"MinSizeRel\"; then :
+  cd /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink
+  make -f /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/CMakeScripts/ReRunCMake.make
+fi
+if test \"$CONFIGURATION\" = \"RelWithDebInfo\"; then :
+  cd /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink
+  make -f /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/CMakeScripts/ReRunCMake.make
+fi
+";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		758FD8FAD40041119A5B54DB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DAF434CEAA9946B9B29B8EEE /* /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/iccApplyToLink.cpp */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		67D2C1A242744E379045F265 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 89B429D6621E440283A27DB0 /* ZERO_CHECK */;
+			targetProxy = D50FADC8DCAA4F59895F310C /* PBXContainerItemProxy */;
+		};
+		CD3845E6691C4B178C50FEF8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 89B429D6621E440283A27DB0 /* ZERO_CHECK */;
+			targetProxy = 5EE6D347971642F49BC41504 /* PBXContainerItemProxy */;
+		};
+		D7667EC963554422B9B9DA8F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2444ABA32250491C914A5D5B /* iccApplyToLink */;
+			targetProxy = 580F9F594F9645AD9ABE1F36 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		03A9B0FDA07240EB9DEF168E /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'","$(inherited)");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = ("","$(inherited)");
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		26B5D2E76F7540FB9E38B890 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = x86_64;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SYMROOT = /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/build;
+			};
+			name = Release;
+		};
+		2E84E8C8815242E3A12BFCB9 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'","$(inherited)");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = ("","$(inherited)");
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		5B1D87C72D1C40F3AC74DD2D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = x86_64;
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/Debug;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'","$(inherited)");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/../../../IccProfLib,/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/../../../IccXML,"$(inherited)");
+				INSTALL_PATH = "";
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_CPLUSPLUSFLAGS = "   '-std=gnu++17' -isysroot '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk' -arch x86_64 ";
+				OTHER_LDFLAGS = ("-isysroot '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk' -arch x86_64 '-L/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/../../../Build/IccProfLib' '-L/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/../../../Build/IccXML' -Wl,-search_paths_first -Wl,-headerpad_max_install_names","-lIccProfLib2","-lIccXML2","$(inherited)");
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = iccApplyToLink;
+				SECTORDER_FLAGS = "";
+				TARGET_TEMP_DIR = "/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/build/iccApplyToLink.build/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("$(inherited)");
+			};
+			name = Debug;
+		};
+		6DED66916E0F4539A383E87B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'","$(inherited)");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = ("","$(inherited)");
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("$(inherited)");
+			};
+			name = Debug;
+		};
+		8290E0C15C394E49A062A223 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = x86_64;
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/Release;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'","$(inherited)");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/../../../IccProfLib,/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/../../../IccXML,"$(inherited)");
+				INSTALL_PATH = "";
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG '-std=gnu++17' -isysroot '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk' -arch x86_64 ";
+				OTHER_LDFLAGS = ("-isysroot '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk' -arch x86_64 '-L/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/../../../Build/IccProfLib' '-L/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/../../../Build/IccXML' -Wl,-search_paths_first -Wl,-headerpad_max_install_names","-lIccProfLib2","-lIccXML2","$(inherited)");
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = iccApplyToLink;
+				SECTORDER_FLAGS = "";
+				TARGET_TEMP_DIR = "/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/build/iccApplyToLink.build/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("$(inherited)");
+			};
+			name = Release;
+		};
+		859F86E209884B9D9CC33239 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = x86_64;
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/RelWithDebInfo;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 2;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'","$(inherited)");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/../../../IccProfLib,/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/../../../IccXML,"$(inherited)");
+				INSTALL_PATH = "";
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_CPLUSPLUSFLAGS = "       -DNDEBUG '-std=gnu++17' -isysroot '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk' -arch x86_64 ";
+				OTHER_LDFLAGS = ("-isysroot '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk' -arch x86_64 '-L/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/../../../Build/IccProfLib' '-L/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/../../../Build/IccXML' -Wl,-search_paths_first -Wl,-headerpad_max_install_names","-lIccProfLib2","-lIccXML2","$(inherited)");
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = iccApplyToLink;
+				SECTORDER_FLAGS = "";
+				TARGET_TEMP_DIR = "/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/build/iccApplyToLink.build/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		8BCFD6587F2247E0B49428B2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = x86_64;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk;
+				SYMROOT = /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/build;
+			};
+			name = Debug;
+		};
+		8FA2E7343ACA450EA2C96738 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = x86_64;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SYMROOT = /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/build;
+			};
+			name = RelWithDebInfo;
+		};
+		A17005A9A83447FFAE074FE7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'","$(inherited)");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = ("","$(inherited)");
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("$(inherited)");
+			};
+			name = Release;
+		};
+		AD46189E5853478F808FCC9E /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = x86_64;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SYMROOT = /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/build;
+			};
+			name = MinSizeRel;
+		};
+		C4ED392793034FCB94A77B1F /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'","$(inherited)");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = ("","$(inherited)");
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		D64D0F0568CE4C7184B20CBD /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = x86_64;
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/MinSizeRel;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'","$(inherited)");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/../../../IccProfLib,/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/../../../IccXML,"$(inherited)");
+				INSTALL_PATH = "";
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG '-std=gnu++17' -isysroot '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk' -arch x86_64 ";
+				OTHER_LDFLAGS = ("-isysroot '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk' -arch x86_64 '-L/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/../../../Build/IccProfLib' '-L/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/../../../Build/IccXML' -Wl,-search_paths_first -Wl,-headerpad_max_install_names","-lIccProfLib2","-lIccXML2","$(inherited)");
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = iccApplyToLink;
+				SECTORDER_FLAGS = "";
+				TARGET_TEMP_DIR = "/Users/xss/tmp/DemoIccMAX/Tools/CmdLine/IccApplyToLink/build/iccApplyToLink.build/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		E2F173343022479D98335BBD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'","$(inherited)");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = ("","$(inherited)");
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("$(inherited)");
+			};
+			name = Debug;
+		};
+		E37F976B947A44EEB219C19D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'","$(inherited)");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = ("","$(inherited)");
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("$(inherited)");
+			};
+			name = Release;
+		};
+		F1C992DB94B041F28179BAF8 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'","$(inherited)");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = ("","$(inherited)");
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		078B7A0EDA564449B9FA2219 /* Build configuration list for PBXProject "iccApplyToLink" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8BCFD6587F2247E0B49428B2 /* Debug */,
+				26B5D2E76F7540FB9E38B890 /* Release */,
+				AD46189E5853478F808FCC9E /* MinSizeRel */,
+				8FA2E7343ACA450EA2C96738 /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7888E8EA007749B2955D5665 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E2F173343022479D98335BBD /* Debug */,
+				E37F976B947A44EEB219C19D /* Release */,
+				03A9B0FDA07240EB9DEF168E /* MinSizeRel */,
+				F1C992DB94B041F28179BAF8 /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DD8CFCAE64EB48788368DA6E /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6DED66916E0F4539A383E87B /* Debug */,
+				A17005A9A83447FFAE074FE7 /* Release */,
+				C4ED392793034FCB94A77B1F /* MinSizeRel */,
+				2E84E8C8815242E3A12BFCB9 /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F0BDB1F1953F405A9A05E4E4 /* Build configuration list for PBXNativeTarget "iccApplyToLink" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5B1D87C72D1C40F3AC74DD2D /* Debug */,
+				8290E0C15C394E49A062A223 /* Release */,
+				D64D0F0568CE4C7184B20CBD /* MinSizeRel */,
+				859F86E209884B9D9CC33239 /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C91A50263E1F4D39B069EA00 /* Project object */;
+}

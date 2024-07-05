@@ -18,7 +18,7 @@ jobs:
     - name: Update Tools
       run: |
           sudo apt-get update
-          sudo apt-get install libxml libxml2
+          sudo apt-get install libxml2
 
     - name: make
       run: |

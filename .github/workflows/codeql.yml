@@ -27,10 +27,17 @@ jobs:
           ls -la
           echo "Listing DemoIccMAX directory:"
           ls -la .
+
+      - name: Download Trail of Bits CodeQL Packs
+        run: |
+          codeql pack download trailofbits/cpp-queries trailofbits/go-queries
+          codeql resolve qlpacks | grep trailofbits
+
       - name: Initialize the CodeQL tools
         uses: github/codeql-action/init@v3
         with:
-          languages: cpp
+          config-file: .github/codeql/codeql-config.yml
+          languages: cpp, python
 
       - name: Build with CMake
         run: |
@@ -41,3 +48,5 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+        with:
+          cleanup: true

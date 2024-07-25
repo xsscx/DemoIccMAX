@@ -41,8 +41,7 @@ jobs:
 
       - name: Run CodeQL Tests
         run: |
-          git clone https://github.com/trailofbits/codeql-queries.git
-          cd codeql-queries
+          cd /path/to/installed/codeql-queries
           codeql test run ./cpp/test
           codeql test run ./go/test
 

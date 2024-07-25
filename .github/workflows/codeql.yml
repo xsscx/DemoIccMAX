@@ -35,6 +35,7 @@ jobs:
       - name: Build with CMake
         run: |
           cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" -Wno-dev Build/Cmake/
+          make clean
           make -j8
         working-directory: .
 

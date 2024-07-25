@@ -28,7 +28,7 @@ jobs:
           echo "Listing PatchMAX directory:"
           ls -la .
       - name: Initialize the CodeQL tools
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@v3
         with:
           languages: cpp, python
 

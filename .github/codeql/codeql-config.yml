@@ -1,0 +1,14 @@
+name: "DemoIccMAX CodeQL config"
+queries:
+  - name: "cpp-security-extended.qls"
+    use: "security-and-quality/extended/cpp"
+  - name: "cpp-security-and-quality.qls"
+    use: "security-and-quality/all/cpp"
+  - name: "python-security-extended.qls"
+    use: "security-and-quality/extended/python"
+  - name: "python-security-and-quality.qls"
+    use: "security-and-quality/all/python"
+paths:
+  - src/**/*.cpp
+  - src/**/*.h
+  - include/**/*.h

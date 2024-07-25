@@ -31,26 +31,24 @@ jobs:
       - name: Download CodeQL tools
         run: |
           CODEQL_BUNDLE_URL="https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.18.0/codeql-bundle-osx64.tar.gz"
-          CODEQL_BUNDLE_TAR="/Users/xss/actions-runner/_work/_temp/codeql-bundle.tar.gz"
-          mkdir -p /Users/xss/actions-runner/_work/_temp/codeql-bundle
+          CODEQL_BUNDLE_TAR="$RUNNER_TEMP/codeql-bundle.tar.gz"
+          CODEQL_BUNDLE_DIR="$RUNNER_TEMP/codeql-bundle"
+          mkdir -p $CODEQL_BUNDLE_DIR
           curl -L $CODEQL_BUNDLE_URL -o $CODEQL_BUNDLE_TAR
-          tar -xzf $CODEQL_BUNDLE_TAR -C /Users/xss/actions-runner/_work/_temp/codeql-bundle
-          export PATH="/Users/xss/actions-runner/_work/_temp/codeql-bundle:$PATH"
+          tar -xzf $CODEQL_BUNDLE_TAR -C $CODEQL_BUNDLE_DIR
+          export PATH="$CODEQL_BUNDLE_DIR:$PATH"
 
       - name: Initialize the CodeQL tools
         uses: github/codeql-action/init@v3
         with:
           languages: cpp, python
-          tools: /Users/xss/actions-runner/_work/_temp/codeql-bundle
-          verbosity: debug # Adding verbosity for debugging
+          tools: $RUNNER_TEMP/codeql-bundle
 
       - name: Build with CMake
         run: |
           cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" -Wno-dev Cmake/
-          make -j8
+          make
         working-directory: Build/
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
-        with:
-          verbosity: debug # Adding verbosity for debugging

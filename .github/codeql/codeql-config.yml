@@ -1,9 +1,9 @@
 name: "My CodeQL config"
 queries:
   - name: "cpp-security-extended"
-    uses: trailofbits/cpp-queries:cpp-security-extended.qls@v0.2.1
+    uses: /Users/xss/.codeql/packages/trailofbits/cpp-queries@v0.2.1/cpp-security-extended.qls
   - name: "cpp-security-and-quality"
-    uses: trailofbits/cpp-queries:cpp-security-and-quality.qls@v0.2.1
+    uses: /Users/xss/.codeql/packages/trailofbits/cpp-queries@v0.2.1/cpp-security-and-quality.qls
 paths:
   - '**/*.cpp'
   - '**/*.h'

@@ -1,13 +1,13 @@
 name: "My CodeQL config"
 queries:
   - name: "cpp-security-extended"
-    uses: trailofbits/cpp-queries:codeql-suites/tob-cpp-full.qls@main
+    uses: trailofbits/cpp-queries:codeql-suites/tob-cpp-full.qls@0.2.1
   - name: "cpp-security-and-quality"
-    uses: trailofbits/cpp-queries:codeql-suites/tob-cpp-code-scanning.qls@main
+    uses: trailofbits/cpp-queries:codeql-suites/tob-cpp-code-scanning.qls@0.2.1
   - name: "python-security-extended"
-    uses: trailofbits/python-queries:codeql-suites/tob-python-full.qls@main
+    uses: trailofbits/python-queries:codeql-suites/tob-python-full.qls@0.2.1
   - name: "python-security-and-quality"
-    uses: trailofbits/python-queries:codeql-suites/tob-python-code-scanning.qls@main
+    uses: trailofbits/python-queries:codeql-suites/tob-python-code-scanning.qls@0.2.1
 paths:
   - '**/*.cpp'
   - '**/*.h'

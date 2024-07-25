@@ -1,13 +1,13 @@
 name: "My CodeQL config"
 queries:
   - name: "cpp-security-extended.qls"
-    uses: security-and-quality/extended/cpp
+    uses: github/codeql/cpp-queries@v1.0.0
   - name: "cpp-security-and-quality.qls"
-    uses: security-and-quality/all/cpp
+    uses: github/codeql/cpp-queries@v1.0.0
   - name: "python-security-extended.qls"
-    uses: security-and-quality/extended/python
+    uses: github/codeql/python-queries@v1.0.0
   - name: "python-security-and-quality.qls"
-    uses: security-and-quality/all/python
+    uses: github/codeql/python-queries@v1.0.0
 paths:
   - '**/*.cpp'
   - '**/*.h'

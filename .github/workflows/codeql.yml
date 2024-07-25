@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Verify Directory Structure
         run: |
@@ -27,19 +27,16 @@ jobs:
           ls -la
           echo "Listing PatchMAX directory:"
           ls -la .
-
       - name: Initialize the CodeQL tools
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: cpp, python
-          config-file: .github/codeql/codeql-config.yml
 
-      - name: Build with CMake (No Cache)
+      - name: Build with CMake
         run: |
           cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" -Wno-dev Build/Cmake/
-          make clean
           make -j8
         working-directory: .
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4

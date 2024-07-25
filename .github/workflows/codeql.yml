@@ -36,7 +36,7 @@ jobs:
       - name: Build with CMake
         run: |
           cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" -Wno-dev Cmake/
-          make
+          make -j8
         working-directory: Build/
 
       - name: Perform CodeQL Analysis

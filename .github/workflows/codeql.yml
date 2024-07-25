@@ -50,3 +50,10 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           cleanup: true
+
+      - name: Cleanup Database Cluster
+        if: always()
+        run: |
+          echo "Cleaning up database cluster directory"
+          rm -rf /Users/xss/actions-runner/_work/_temp/codeql_databases
+          ls -la /Users/xss/actions-runner/_work/_temp/

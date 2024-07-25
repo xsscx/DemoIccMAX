@@ -39,6 +39,13 @@ jobs:
           config-file: .github/codeql/codeql-config.yml
           languages: cpp, python
 
+      - name: Run CodeQL Tests
+        run: |
+          git clone https://github.com/trailofbits/codeql-queries.git
+          cd codeql-queries
+          codeql test run ./cpp/test
+          codeql test run ./go/test
+
       - name: Build with CMake
         run: |
           cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" -Wno-dev Build/Cmake/

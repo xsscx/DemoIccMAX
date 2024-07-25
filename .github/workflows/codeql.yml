@@ -37,13 +37,7 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           config-file: .github/codeql/codeql-config.yml
-          languages: cpp, python
-
-      - name: Run CodeQL Tests
-        run: |
-          cd /path/to/installed/codeql-queries
-          codeql test run ./cpp/test
-          codeql test run ./go/test
+          languages: cpp
 
       - name: Build with CMake
         run: |

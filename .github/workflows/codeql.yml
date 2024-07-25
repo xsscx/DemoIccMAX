@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3 # Updated to v3
+        uses: actions/checkout@v3
 
       - name: Verify Directory Structure
         run: |
@@ -27,11 +27,22 @@ jobs:
           ls -la
           echo "Listing PatchMAX directory:"
           ls -la .
-      
+
+      - name: Download CodeQL tools
+        run: |
+          CODEQL_BUNDLE_URL="https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.18.0/codeql-bundle-osx64.tar.gz"
+          CODEQL_BUNDLE_TAR="/Users/xss/actions-runner/_work/_temp/codeql-bundle.tar.gz"
+          mkdir -p /Users/xss/actions-runner/_work/_temp/codeql-bundle
+          curl -L $CODEQL_BUNDLE_URL -o $CODEQL_BUNDLE_TAR
+          tar -xzf $CODEQL_BUNDLE_TAR -C /Users/xss/actions-runner/_work/_temp/codeql-bundle
+          export PATH="/Users/xss/actions-runner/_work/_temp/codeql-bundle:$PATH"
+
       - name: Initialize the CodeQL tools
-        uses: github/codeql-action/init@v3 # Updated to v3
+        uses: github/codeql-action/init@v3
         with:
           languages: cpp, python
+          tools: /Users/xss/actions-runner/_work/_temp/codeql-bundle
+          verbosity: debug # Adding verbosity for debugging
 
       - name: Build with CMake
         run: |
@@ -40,4 +51,6 @@ jobs:
         working-directory: Build/
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3 # Updated to v3
+        uses: github/codeql-action/analyze@v3
+        with:
+          verbosity: debug # Adding verbosity for debugging

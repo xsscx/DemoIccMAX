@@ -28,10 +28,10 @@ jobs:
           echo "Listing DemoIccMAX directory:"
           ls -la .
 
-      - name: Download Trail of Bits CodeQL Packs
+      - name: Print Installed CodeQL Packs
         run: |
-          codeql pack download trailofbits/cpp-queries trailofbits/go-queries
-          codeql resolve qlpacks | grep trailofbits
+          echo "Installed CodeQL Packs:"
+          codeql resolve qlpacks
 
       - name: Initialize the CodeQL tools
         uses: github/codeql-action/init@v3

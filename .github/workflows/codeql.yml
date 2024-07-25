@@ -28,23 +28,11 @@ jobs:
           echo "Listing PatchMAX directory:"
           ls -la .
 
-      - name: Download CodeQL tools
-        env:
-          RUNNER_TEMP: ${{ runner.temp }}
-        run: |
-          CODEQL_BUNDLE_URL="https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.18.0/codeql-bundle-osx64.tar.gz"
-          CODEQL_BUNDLE_TAR="${RUNNER_TEMP}/codeql-bundle.tar.gz"
-          CODEQL_BUNDLE_DIR="${RUNNER_TEMP}/codeql-bundle"
-          mkdir -p ${CODEQL_BUNDLE_DIR}
-          curl -L ${CODEQL_BUNDLE_URL} -o ${CODEQL_BUNDLE_TAR}
-          tar -xzf ${CODEQL_BUNDLE_TAR} -C ${CODEQL_BUNDLE_DIR}
-          export PATH="${CODEQL_BUNDLE_DIR}/codeql:$PATH"
-
       - name: Initialize the CodeQL tools
         uses: github/codeql-action/init@v3
         with:
           languages: cpp, python
-          tools: ${{ runner.temp }}/codeql-bundle/codeql
+          config-file: .github/codeql/codeql-config.yml
 
       - name: Build with CMake
         run: |
@@ -54,3 +42,20 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+
+# CodeQL configuration embedded directly in the YAML file
+  codeql-config.yml: |
+    name: "My CodeQL config"
+    queries:
+      - name: "cpp-security-extended.qls"
+        use: "security-and-quality/extended/cpp"
+      - name: "cpp-security-and-quality.qls"
+        use: "security-and-quality/all/cpp"
+      - name: "python-security-extended.qls"
+        use: "security-and-quality/extended/python"
+      - name: "python-security-and-quality.qls"
+        use: "security-and-quality/all/python"
+    paths:
+      - src/**/*.cpp
+      - src/**/*.h
+      - include/**/*.h

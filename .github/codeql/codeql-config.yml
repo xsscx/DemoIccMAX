@@ -1,7 +1,10 @@
-name: "My Single C++ Query Config"
+name: "My CodeQL config"
 queries:
+  - name: "cpp-security-extended"
+    uses: trailofbits/cpp-queries:cpp-security-extended.qls@v0.2.1
   - name: "cpp-security-and-quality"
-    uses: trailofbits/cpp-queries:codeql-suites/tob-cpp-code-scanning.qls@v0.2.1
+    uses: trailofbits/cpp-queries:cpp-security-and-quality.qls@v0.2.1
 paths:
   - '**/*.cpp'
   - '**/*.h'
+  - '**/*.py'

@@ -25,10 +25,11 @@ jobs:
           cd $tempDir
           Get-ChildItem
           cmd /c bootstrap-vcpkg.bat
-          .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
         } else {
           Write-Output "vcpkg already set up."
+          cd $tempDir
         }
+        .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
       shell: pwsh
 
     - name: Set up DemoIccMAX
@@ -45,6 +46,9 @@ jobs:
           Write-Output "DemoIccMAX already set up."
           cd $demoIccMaxDir
         }
+        Write-Output "Current directory: $PWD"
+        Write-Output "Listing files in the current directory:"
+        Get-ChildItem -Recurse -File -Name
       shell: pwsh
 
     - name: Build DemoIccMAX solution

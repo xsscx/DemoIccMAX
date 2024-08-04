@@ -27,9 +27,10 @@ jobs:
           cmd /c bootstrap-vcpkg.bat
         } else {
           Write-Output "vcpkg already set up."
-          cd $tempDir
         }
-        .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
+        cd $tempDir
+        $vcpkgExe = Join-Path -Path $tempDir -ChildPath "vcpkg.exe"
+        & $vcpkgExe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
       shell: pwsh
 
     - name: Set up DemoIccMAX

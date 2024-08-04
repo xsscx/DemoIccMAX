@@ -46,11 +46,11 @@ jobs:
         $env:PATH += ";$vcpkgDir\installed\x64-windows\bin;$vcpkgDir\installed\x64-windows\debug\bin"
         $env:INCLUDE += ";$vcpkgDir\installed\x64-windows\include"
         $env:LIB += ";$vcpkgDir\installed\x64-windows\lib;$vcpkgDir\installed\x64-windows\debug\lib"
-        Write-Output "VCPKG_ROOT: $env:VCPKG_ROOT"
-        Write-Output "VCPKG_DEFAULT_TRIPLET: $env:VCPKG_DEFAULT_TRIPLET"
-        Write-Output "PATH: $env:PATH"
-        Write-Output "INCLUDE: $env:INCLUDE"
-        Write-Output "LIB: $env:LIB"
+        Write-Output "VCPKG_ROOT: $env:VCPKG_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
+        Write-Output "VCPKG_DEFAULT_TRIPLET: $env:VCPKG_DEFAULT_TRIPLET" | Out-File -FilePath $env:GITHUB_ENV -Append
+        Write-Output "PATH: $env:PATH" | Out-File -FilePath $env:GITHUB_ENV -Append
+        Write-Output "INCLUDE: $env:INCLUDE" | Out-File -FilePath $env:GITHUB_ENV -Append
+        Write-Output "LIB: $env:LIB" | Out-File -FilePath $env:GITHUB_ENV -Append
 
         # Debugging: Print the contents of the include and lib directories
         Write-Output "Contents of INCLUDE directory:"
@@ -121,14 +121,14 @@ jobs:
         }
         
         Write-Output "MSBuild.exe found at $msbuildPath"
-        echo "::set-output name=msbuild_path::$msbuildPath"
+        Write-Output "MSBUILD_PATH=$msbuildPath" | Out-File -FilePath $env:GITHUB_ENV -Append
       shell: pwsh
 
     - name: Build DemoIccMAX solution
       run: |
         $demoIccMaxDir = "$env:USERPROFILE\DemoIccMAX"
         cd $demoIccMaxDir
-        $msbuildPath = "${{ steps.msbuild.outputs.msbuild_path }}"
+        $msbuildPath = "$env:MSBUILD_PATH"
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
 
         # Explicitly adding the INCLUDE and LIB paths in the msbuild command
@@ -143,7 +143,7 @@ jobs:
       run: |
         $demoIccMaxDir = "$env:USERPROFILE\DemoIccMAX"
         cd $demoIccMaxDir
-        $msbuildPath = "${{ steps.msbuild.outputs.msbuild_path }}"
+        $msbuildPath = "$env:MSBUILD_PATH"
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
 
         # Use the INCLUDE and LIB paths from the environment variables
@@ -158,7 +158,7 @@ jobs:
       run: |
         $demoIccMaxDir = "$env:USERPROFILE\DemoIccMAX"
         cd $demoIccMaxDir
-        $msbuildPath = "${{ steps.msbuild.outputs.msbuild_path }}"
+        $msbuildPath = "$env:MSBUILD_PATH"
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
 
         # Use the INCLUDE and LIB paths from the environment variables

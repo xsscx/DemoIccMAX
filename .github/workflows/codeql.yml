@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: self-hosted
 
     steps:
     - name: Checkout repository
@@ -27,10 +27,15 @@ jobs:
           cmd /c bootstrap-vcpkg.bat
         } else {
           Write-Output "vcpkg already set up."
-          cd $tempDir
         }
-        $vcpkgExe = Join-Path -Path $tempDir -ChildPath "vcpkg.exe"
-        & $vcpkgExe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
+        cd $tempDir
+        if (Test-Path "$tempDir\vcpkg.exe") {
+          Write-Output "vcpkg.exe exists at $tempDir\vcpkg.exe"
+          & "$tempDir\vcpkg.exe" install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
+        } else {
+          Write-Output "vcpkg.exe not found at $tempDir\vcpkg.exe"
+          exit 1
+        }
       shell: pwsh
 
     - name: Set up DemoIccMAX

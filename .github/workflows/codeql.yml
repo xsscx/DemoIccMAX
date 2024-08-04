@@ -75,11 +75,36 @@ jobs:
         }
       shell: pwsh
 
+    - name: Find MSBuild.exe
+      id: msbuild
+      run: |
+        $paths = @(
+          "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe",
+          "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+        )
+        
+        $msbuildPath = $null
+        foreach ($path in $paths) {
+          if (Test-Path $path) {
+            $msbuildPath = $path
+            break
+          }
+        }
+        
+        if ($msbuildPath -eq $null) {
+          Write-Error "MSBuild.exe not found in known locations."
+          exit 1
+        }
+        
+        Write-Output "MSBuild.exe found at $msbuildPath"
+        echo "::set-output name=msbuild_path::$msbuildPath"
+      shell: pwsh
+
     - name: Build DemoIccMAX solution
       run: |
         $demoIccMaxDir = "$env:USERPROFILE\DemoIccMAX"
         cd $demoIccMaxDir
-        $msbuildPath = (Get-Command msbuild.exe).Source
+        $msbuildPath = "${{ steps.msbuild.outputs.msbuild_path }}"
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
         & $msbuildPath .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64 /maxcpucount:$maxCpuCount
         & $msbuildPath .\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64 /maxcpucount:$maxCpuCount
@@ -89,7 +114,7 @@ jobs:
       run: |
         $demoIccMaxDir = "$env:USERPROFILE\DemoIccMAX"
         cd $demoIccMaxDir
-        $msbuildPath = (Get-Command msbuild.exe).Source
+        $msbuildPath = "${{ steps.msbuild.outputs.msbuild_path }}"
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
         & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
         & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform:x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
@@ -99,7 +124,7 @@ jobs:
       run: |
         $demoIccMaxDir = "$env:USERPROFILE\DemoIccMAX"
         cd $demoIccMaxDir
-        $msbuildPath = (Get-Command msbuild.exe).Source
+        $msbuildPath = "${{ steps.msbuild.outputs.msbuild_path }}"
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
         & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
         & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform:x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount

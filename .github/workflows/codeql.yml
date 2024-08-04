@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: self-hosted
 
     steps:
     - name: Checkout repository
@@ -24,7 +24,7 @@ jobs:
         }
         cd $env:TEMP\vcpkg
         cmd /c bootstrap-vcpkg.bat
-        .\$env:TEMP\vcpkg\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
+        .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
       shell: pwsh
 
     - name: Set up DemoIccMAX

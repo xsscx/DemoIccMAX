@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: self-hosted
 
     steps:
     - name: Checkout repository
@@ -56,6 +56,25 @@ jobs:
         Get-ChildItem -Recurse -File -Name
       shell: pwsh
 
+    - name: Retarget solution to use v143
+      run: |
+        $solutionDir = "$env:USERPROFILE\DemoIccMAX"
+        cd $solutionDir
+
+        function Update-PlatformToolset {
+            param (
+                [string]$filePath,
+                [string]$newToolset = "v143"
+            )
+            
+            (Get-Content $filePath) -replace 'v142', $newToolset | Set-Content $filePath
+        }
+
+        Get-ChildItem -Path $solutionDir -Recurse -Filter *.vcxproj | ForEach-Object {
+            Update-PlatformToolset -filePath $_.FullName
+        }
+      shell: pwsh
+
     - name: Build DemoIccMAX solution
       run: |
         $demoIccMaxDir = "$env:USERPROFILE\DemoIccMAX"
@@ -82,6 +101,6 @@ jobs:
         cd $demoIccMaxDir
         $msbuildPath = (Get-Command msbuild.exe).Source
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
-        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform:x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
+        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
         & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform:x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
       shell: pwsh

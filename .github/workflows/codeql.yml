@@ -130,8 +130,12 @@ jobs:
         $includePath = "$env:INCLUDE;$env:VCPKG_ROOT\installed\x64-windows\include"
         $libPath = "$env:LIB;$env:VCPKG_ROOT\installed\x64-windows\lib;$env:VCPKG_ROOT\installed\x64-windows\debug\lib"
 
-        & $msbuildPath .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64 /maxcpucount:$maxCpuCount /p:IncludePath="$includePath" /p:LibraryPath="$libPath"
-        & $msbuildPath .\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64 /maxcpucount:$maxCpuCount /p:IncludePath="$includePath" /p:LibraryPath="$libPath"
+        # Ensure paths are correctly formatted for MSBuild
+        $includePath = $includePath -replace ';', '`;'
+        $libPath = $libPath -replace ';', '`;'
+
+        & $msbuildPath .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64 /maxcpucount:$maxCpuCount "/p:IncludePath=$includePath" "/p:LibraryPath=$libPath"
+        & $msbuildPath .\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64 /maxcpucount:$maxCpuCount "/p:IncludePath=$includePath" "/p:LibraryPath=$libPath"
       shell: pwsh
 
     - name: Manually build IccApplyToLink with AddressSanitizer
@@ -145,8 +149,12 @@ jobs:
         $includePath = "$env:INCLUDE;$env:VCPKG_ROOT\installed\x64-windows\include"
         $libPath = "$env:LIB;$env:VCPKG_ROOT\installed\x64-windows\lib;$env:VCPKG_ROOT\installed\x64-windows\debug\lib"
 
-        & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount /p:IncludePath="$includePath" /p:LibraryPath="$libPath"
-        & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount /p:IncludePath="$includePath" /p:LibraryPath="$libPath"
+        # Ensure paths are correctly formatted for MSBuild
+        $includePath = $includePath -replace ';', '`;'
+        $libPath = $libPath -replace ';', '`;'
+
+        & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount "/p:IncludePath=$includePath" "/p:LibraryPath=$libPath"
+        & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount "/p:IncludePath=$includePath" "/p:LibraryPath=$libPath"
       shell: pwsh
 
     - name: Manually build IccFromCube with AddressSanitizer
@@ -160,6 +168,10 @@ jobs:
         $includePath = "$env:INCLUDE;$env:VCPKG_ROOT\installed\x64-windows\include"
         $libPath = "$env:LIB;$env:VCPKG_ROOT\installed\x64-windows\lib;$env:VCPKG_ROOT\installed\x64-windows\debug\lib"
 
-        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount /p:IncludePath="$includePath" /p:LibraryPath="$libPath"
-        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform:x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount /p:IncludePath="$includePath" /p:LibraryPath="$libPath"
+        # Ensure paths are correctly formatted for MSBuild
+        $includePath = $includePath -replace ';', '`;'
+        $libPath = $libPath -replace ';', '`;'
+
+        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount "/p:IncludePath=$includePath" "/p:LibraryPath=$libPath"
+        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform:x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount "/p:IncludePath=$includePath" "/p:LibraryPath=$libPath"
       shell: pwsh

@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: windows-latest
 
     steps:
     - name: Checkout repository
@@ -22,9 +22,9 @@ jobs:
         if (!(Test-Path -Path "vcpkg")) {
           git clone https://github.com/microsoft/vcpkg.git
         }
-        cd vcpkg
+        cd $env:TEMP\vcpkg
         cmd /c bootstrap-vcpkg.bat
-        ./vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
+        .\$env:TEMP\vcpkg\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
       shell: pwsh
 
     - name: Set up DemoIccMAX
@@ -32,12 +32,12 @@ jobs:
         cd $env:TEMP
         if (!(Test-Path -Path "DemoIccMAX")) {
           git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
-          cd DemoIccMAX
+          cd $env:TEMP\DemoIccMAX
           git config user.email "you@example.com"
           git config user.name "Your Name"
           git revert b90ac3933da99179df26351c39d8d9d706ac1cc6 --no-edit
         } else {
-          cd DemoIccMAX
+          cd $env:TEMP\DemoIccMAX
         }
       shell: pwsh
 

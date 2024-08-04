@@ -71,7 +71,6 @@ jobs:
       run: |
         $solutionDir = "$env:USERPROFILE\DemoIccMAX"
         cd $solutionDir
-
         function Update-PlatformToolset {
             param (
                 [string]$filePath,
@@ -80,7 +79,6 @@ jobs:
             
             (Get-Content $filePath) -replace 'v142', $newToolset | Set-Content $filePath
         }
-
         Get-ChildItem -Path $solutionDir -Recurse -Filter *.vcxproj | ForEach-Object {
             Update-PlatformToolset -filePath $_.FullName
         }

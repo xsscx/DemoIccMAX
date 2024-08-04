@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: windows-latest
 
     steps:
     - name: Checkout repository
@@ -46,6 +46,13 @@ jobs:
         $env:LIBXML2_LIB = Join-Path -Path $vcpkgDir -ChildPath "installed\x64-windows\lib"
         $env:LIBTIFF_LIB = Join-Path -Path $vcpkgDir -ChildPath "installed\x64-windows\lib"
         $env:WXWIDGETS_LIB = Join-Path -Path $vcpkgDir -ChildPath "installed\x64-windows\lib"
+
+        Write-Output "LIBXML2_INCLUDE: $env:LIBXML2_INCLUDE"
+        Write-Output "LIBTIFF_INCLUDE: $env:LIBTIFF_INCLUDE"
+        Write-Output "WXWIDGETS_INCLUDE: $env:WXWIDGETS_INCLUDE"
+        Write-Output "LIBXML2_LIB: $env:LIBXML2_LIB"
+        Write-Output "LIBTIFF_LIB: $env:LIBTIFF_LIB"
+        Write-Output "WXWIDGETS_LIB: $env:WXWIDGETS_LIB"
       shell: pwsh
 
     - name: Set up DemoIccMAX
@@ -128,7 +135,7 @@ jobs:
         $msbuildPath = "${{ steps.msbuild.outputs.msbuild_path }}"
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
         & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
-        & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform:x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
+        & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
       shell: pwsh
 
     - name: Manually build IccFromCube with AddressSanitizer

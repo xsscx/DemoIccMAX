@@ -40,11 +40,12 @@ jobs:
     - name: Set up environment variables for dependencies
       run: |
         $vcpkgDir = "$env:USERPROFILE\vcpkg"
-        $env:INCLUDE = "$env:INCLUDE;$vcpkgDir\installed\x64-windows\include"
-        $env:LIB = "$env:LIB;$vcpkgDir\installed\x64-windows\lib"
-        
-        Write-Output "INCLUDE: $env:INCLUDE"
-        Write-Output "LIB: $env:LIB"
+        $env:VCPKG_ROOT = $vcpkgDir
+        $env:VCPKG_DEFAULT_TRIPLET = "x64-windows"
+        $env:PATH += ";$vcpkgDir\installed\x64-windows\bin;$vcpkgDir\installed\x64-windows\debug\bin"
+        Write-Output "VCPKG_ROOT: $env:VCPKG_ROOT"
+        Write-Output "VCPKG_DEFAULT_TRIPLET: $env:VCPKG_DEFAULT_TRIPLET"
+        Write-Output "PATH: $env:PATH"
       shell: pwsh
 
     - name: Set up DemoIccMAX
@@ -116,8 +117,8 @@ jobs:
         cd $demoIccMaxDir
         $msbuildPath = "${{ steps.msbuild.outputs.msbuild_path }}"
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
-        & $msbuildPath .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64 /maxcpucount:$maxCpuCount
-        & $msbuildPath .\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64 /maxcpucount:$maxCpuCount
+        & $msbuildPath .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64 /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT
+        & $msbuildPath .\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64 /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT
       shell: pwsh
 
     - name: Manually build IccApplyToLink with AddressSanitizer
@@ -126,8 +127,8 @@ jobs:
         cd $demoIccMaxDir
         $msbuildPath = "${{ steps.msbuild.outputs.msbuild_path }}"
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
-        & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
-        & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
+        & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT
+        & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT
       shell: pwsh
 
     - name: Manually build IccFromCube with AddressSanitizer
@@ -136,6 +137,6 @@ jobs:
         cd $demoIccMaxDir
         $msbuildPath = "${{ steps.msbuild.outputs.msbuild_path }}"
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
-        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
-        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform:x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
+        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT
+        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform:x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT
       shell: pwsh

@@ -1,79 +1,58 @@
-# Windows 11 Build Instructions with Visual Studio 2022
+name: Build DemoIccMAX
 
-# These instructions detail the steps required to build the latest DemoIccMAX project on Windows 11 using Visual Studio 2022.
-# These steps will guide you through setting up the necessary dependencies using `vcpkg`, cloning the DemoIccMAX repository,
-# and building the project in both Debug and Release configurations, with additional steps for enabling AddressSanitizer.
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
-# Step 1: Set up vcpkg for dependency management
+jobs:
+  build:
+    runs-on: windows-latest
 
-# Change to the temporary directory
-cd $env:TEMP
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-# Check if vcpkg directory exists
-if (!(Test-Path -Path "vcpkg")) {
-    # Clone the vcpkg repository from GitHub
-    git clone https://github.com/microsoft/vcpkg.git
+    - name: Set up vcpkg
+      run: |
+        cd $env:TEMP
+        if (!(Test-Path -Path "vcpkg")) {
+          git clone https://github.com/microsoft/vcpkg.git
+        }
+        cd vcpkg
+        .\bootstrap-vcpkg.bat
+        .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
 
-    # Change to the vcpkg directory
-    cd vcpkg
+    - name: Set up DemoIccMAX
+      run: |
+        cd $env:TEMP
+        if (!(Test-Path -Path "DemoIccMAX")) {
+          git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
+          cd DemoIccMAX
+          git config user.email "you@example.com"
+          git config user.name "Your Name"
+          git revert b90ac3933da99179df26351c39d8d9d706ac1cc6 --no-edit
+        } else {
+          cd DemoIccMAX
+        }
 
-    # Bootstrap vcpkg to set it up
-    .\bootstrap-vcpkg.bat
+    - name: Build DemoIccMAX solution
+      run: |
+        cd $env:TEMP\DemoIccMAX
+        "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64
+        "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64
 
-    # Change back to the temporary directory
-    cd $env:TEMP
-}
+    - name: Manually build IccApplyToLink with AddressSanitizer
+      run: |
+        cd $env:TEMP\DemoIccMAX
+        "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+        "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
 
-# Change to the vcpkg directory
-cd vcpkg
-
-# Install necessary dependencies using vcpkg
-.\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
-
-# Step 2: Clone the DemoIccMAX repository
-
-# Change back to the temporary directory
-cd $env:TEMP
-
-# Check if DemoIccMAX directory exists
-if (!(Test-Path -Path "DemoIccMAX")) {
-    # Clone the DemoIccMAX repository from GitHub
-    git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
-
-    # Change to the DemoIccMAX directory
-    cd DemoIccMAX
-
-    # Set up a local Git user identity to avoid the error
-    git config user.email "you@example.com"
-    git config user.name "Your Name"
-
-    # Revert a specific commit (b90ac3933da99179df26351c39d8d9d706ac1cc6) if necessary
-    git revert b90ac3933da99179df26351c39d8d9d706ac1cc6 --no-edit
-} else {
-    # Change to the DemoIccMAX directory
-    cd DemoIccMAX
-}
-
-# Step 3: Build the solution
-
-# Clean the build for the entire solution (BuildAll_v19.sln) for Debug configuration and x64 platform
-"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64
-
-# Build the entire solution (BuildAll_v19.sln) for Debug configuration and x64 platform
-"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64
-
-# Step 4: Manually build IccApplyToLink with AddressSanitizer
-
-# Clean the IccApplyToLink project for Debug configuration and x64 platform with AddressSanitizer enabled
-"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
-
-# Build the IccApplyToLink project for Debug configuration and x64 platform with AddressSanitizer enabled
-"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
-
-# Step 5: Manually build IccFromCube with AddressSanitizer
-
-# Clean the IccFromCube project for Debug configuration and x64 platform with AddressSanitizer enabled
-"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
-
-# Build the IccFromCube project for Debug configuration and x64 platform with AddressSanitizer enabled
-"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+    - name: Manually build IccFromCube with AddressSanitizer
+      run: |
+        cd $env:TEMP\DemoIccMAX
+        "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+        "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"

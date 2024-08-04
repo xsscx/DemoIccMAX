@@ -1,59 +1,47 @@
-name: CodeQL
+name: Windows Build
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-permissions:
-  contents: write
-  security-events: write
+on: [push, pull_request]
 
 jobs:
-  analyze:
-    name: Analyze
-    runs-on: self-hosted
+  build:
+    runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: Verify Directory Structure
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "Listing root directory:"
-          ls -la
-          echo "Listing DemoIccMAX directory:"
-          ls -la .
+    - name: Set up vcpkg for dependency management
+      run: |
+        cd $env:TEMP
+        git clone https://github.com/microsoft/vcpkg.git
+        cd vcpkg
+        .\bootstrap-vcpkg.bat
+        .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
 
-      - name: Print Installed CodeQL Packs
-        run: |
-          echo "Installed CodeQL Packs:"
-          codeql resolve qlpacks
+    - name: Clone DemoIccMAX repository
+      run: |
+        cd $env:TEMP
+        git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
+        cd DemoIccMAX
+        git revert b90ac3933da99179df26351c39d8d9d706ac1cc6
 
-      - name: Initialize the CodeQL tools
-        uses: github/codeql-action/init@v3
-        with:
-          config-file: .github/codeql/codeql-config.yml
-          languages: cpp, python
+    - name: Build solution
+      run: |
+        $msbuild = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+        cd $env:TEMP\DemoIccMAX
+        & $msbuild .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64
+        & $msbuild .\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64
 
-      - name: Build with CMake
-        run: |
-          cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" -Wno-dev Build/Cmake/
-          make clean
-          make -j8
-        working-directory: .
+    - name: Build IccApplyToLink with AddressSanitizer
+      run: |
+        $msbuild = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+        cd $env:TEMP\DemoIccMAX
+        & $msbuild .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+        & $msbuild .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
-        with:
-          cleanup: true
-
-      - name: Cleanup Database Cluster
-        if: always()
-        run: |
-          echo "Cleaning up database cluster directory"
-          rm -rf /Users/xss/actions-runner/_work/_temp/codeql_databases
-          ls -la /Users/xss/actions-runner/_work/_temp/
+    - name: Build IccFromCube with AddressSanitizer
+      run: |
+        $msbuild = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+        cd $env:TEMP\DemoIccMAX
+        & $msbuild .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+        & $msbuild .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"

@@ -41,16 +41,11 @@ jobs:
     - name: Set up environment variables for dependencies
       run: |
         $vcpkgDir = "$env:USERPROFILE\vcpkg"
-        $env:VCPKG_ROOT = $vcpkgDir
-        $env:VCPKG_DEFAULT_TRIPLET = "x64-windows"
-        $env:PATH += ";$vcpkgDir\installed\x64-windows\bin;$vcpkgDir\installed\x64-windows\debug\bin"
-        $env:INCLUDE += ";$vcpkgDir\installed\x64-windows\include"
-        $env:LIB += ";$vcpkgDir\installed\x64-windows\lib;$vcpkgDir\installed\x64-windows\debug\lib"
-        Write-Output "VCPKG_ROOT: $env:VCPKG_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-        Write-Output "VCPKG_DEFAULT_TRIPLET: $env:VCPKG_DEFAULT_TRIPLET" | Out-File -FilePath $env:GITHUB_ENV -Append
-        Write-Output "PATH: $env:PATH" | Out-File -FilePath $env:GITHUB_ENV -Append
-        Write-Output "INCLUDE: $env:INCLUDE" | Out-File -FilePath $env:GITHUB_ENV -Append
-        Write-Output "LIB: $env:LIB" | Out-File -FilePath $env:GITHUB_ENV -Append
+        echo "VCPKG_ROOT=$vcpkgDir" >> $env:GITHUB_ENV
+        echo "VCPKG_DEFAULT_TRIPLET=x64-windows" >> $env:GITHUB_ENV
+        echo "PATH=$env:PATH;$vcpkgDir\installed\x64-windows\bin;$vcpkgDir\installed\x64-windows\debug\bin" >> $env:GITHUB_ENV
+        echo "INCLUDE=$env:INCLUDE;$vcpkgDir\installed\x64-windows\include" >> $env:GITHUB_ENV
+        echo "LIB=$env:LIB;$vcpkgDir\installed\x64-windows\lib;$vcpkgDir\installed\x64-windows\debug\lib" >> $env:GITHUB_ENV
 
         # Debugging: Print the contents of the include and lib directories
         Write-Output "Contents of INCLUDE directory:"
@@ -121,7 +116,7 @@ jobs:
         }
         
         Write-Output "MSBuild.exe found at $msbuildPath"
-        Write-Output "MSBUILD_PATH=$msbuildPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+        echo "MSBUILD_PATH=$msbuildPath" >> $env:GITHUB_ENV
       shell: pwsh
 
     - name: Build DemoIccMAX solution

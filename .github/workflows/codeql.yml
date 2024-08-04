@@ -120,8 +120,8 @@ jobs:
         cd $demoIccMaxDir
         $msbuildPath = "${{ steps.msbuild.outputs.msbuild_path }}"
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
-        & $msbuildPath .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64 /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT
-        & $msbuildPath .\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64 /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT
+        & $msbuildPath .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64 /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT /p:IncludePath="$env:INCLUDE" /p:LibraryPath="$env:LIB"
+        & $msbuildPath .\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64 /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT /p:IncludePath="$env:INCLUDE" /p:LibraryPath="$env:LIB"
       shell: pwsh
 
     - name: Manually build IccApplyToLink with AddressSanitizer
@@ -130,8 +130,8 @@ jobs:
         cd $demoIccMaxDir
         $msbuildPath = "${{ steps.msbuild.outputs.msbuild_path }}"
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
-        & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT
-        & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT
+        & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT /p:IncludePath="$env:INCLUDE" /p:LibraryPath="$env:LIB"
+        & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT /p:IncludePath="$env:INCLUDE" /p:LibraryPath="$env:LIB"
       shell: pwsh
 
     - name: Manually build IccFromCube with AddressSanitizer
@@ -140,6 +140,6 @@ jobs:
         cd $demoIccMaxDir
         $msbuildPath = "${{ steps.msbuild.outputs.msbuild_path }}"
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
-        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT
-        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform:x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT
+        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT /p:IncludePath="$env:INCLUDE" /p:LibraryPath="$env:LIB"
+        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform:x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount /p:VcpkgRoot=$env:VCPKG_ROOT /p:IncludePath="$env:INCLUDE" /p:LibraryPath="$env:LIB"
       shell: pwsh

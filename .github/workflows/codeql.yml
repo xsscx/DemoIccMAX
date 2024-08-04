@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: windows-latest
 
     steps:
     - name: Checkout repository
@@ -18,46 +18,55 @@ jobs:
 
     - name: Set up vcpkg
       run: |
-        cd $env:TEMP
-        if (!(Test-Path -Path "vcpkg")) {
-          git clone https://github.com/microsoft/vcpkg.git
+        $tempDir = "$env:TEMP\vcpkg"
+        if (!(Test-Path -Path $tempDir)) {
+          Write-Output "vcpkg not found, cloning and bootstrapping..."
+          git clone https://github.com/microsoft/vcpkg.git $tempDir
+          cd $tempDir
+          Get-ChildItem
+          cmd /c bootstrap-vcpkg.bat
+          .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
+        } else {
+          Write-Output "vcpkg already set up."
         }
-        cd $env:TEMP\vcpkg
-        cmd /c bootstrap-vcpkg.bat
-        .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
       shell: pwsh
 
     - name: Set up DemoIccMAX
       run: |
-        cd $env:TEMP
-        if (!(Test-Path -Path "DemoIccMAX")) {
-          git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
-          cd $env:TEMP\DemoIccMAX
+        $demoIccMaxDir = "$env:TEMP\DemoIccMAX"
+        if (!(Test-Path -Path $demoIccMaxDir)) {
+          Write-Output "DemoIccMAX not found, cloning..."
+          git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git $demoIccMaxDir
+          cd $demoIccMaxDir
           git config user.email "you@example.com"
           git config user.name "Your Name"
           git revert b90ac3933da99179df26351c39d8d9d706ac1cc6 --no-edit
         } else {
-          cd $env:TEMP\DemoIccMAX
+          Write-Output "DemoIccMAX already set up."
+          cd $demoIccMaxDir
         }
       shell: pwsh
 
     - name: Build DemoIccMAX solution
       run: |
-        cd $env:TEMP\DemoIccMAX
+        $demoIccMaxDir = "$env:TEMP\DemoIccMAX"
+        cd $demoIccMaxDir
         & "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64
         & "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64
       shell: pwsh
 
     - name: Manually build IccApplyToLink with AddressSanitizer
       run: |
-        cd $env:TEMP\DemoIccMAX
+        $demoIccMaxDir = "$env:TEMP\DemoIccMAX"
+        cd $demoIccMaxDir
         & "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
         & "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
       shell: pwsh
 
     - name: Manually build IccFromCube with AddressSanitizer
       run: |
-        cd $env:TEMP\DemoIccMAX
+        $demoIccMaxDir = "$env:TEMP\DemoIccMAX"
+        cd $demoIccMaxDir
         & "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
         & "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
       shell: pwsh

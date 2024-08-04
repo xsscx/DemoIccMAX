@@ -23,8 +23,8 @@ jobs:
           git clone https://github.com/microsoft/vcpkg.git
         }
         cd vcpkg
-        cmd /c .\bootstrap-vcpkg.bat
-        .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
+        cmd /c bootstrap-vcpkg.bat
+        ./vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
       shell: pwsh
 
     - name: Set up DemoIccMAX

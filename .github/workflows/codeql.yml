@@ -18,29 +18,28 @@ jobs:
 
     - name: Set up vcpkg
       run: |
-        $tempDir = "$env:TEMP\vcpkg"
-        if (!(Test-Path -Path $tempDir)) {
+        $vcpkgDir = "$env:USERPROFILE\vcpkg"
+        if (!(Test-Path -Path $vcpkgDir)) {
           Write-Output "vcpkg not found, cloning and bootstrapping..."
-          git clone https://github.com/microsoft/vcpkg.git $tempDir
-          cd $tempDir
-          Get-ChildItem
+          git clone https://github.com/microsoft/vcpkg.git $vcpkgDir
+          cd $vcpkgDir
           cmd /c bootstrap-vcpkg.bat
         } else {
           Write-Output "vcpkg already set up."
+          cd $vcpkgDir
         }
-        cd $tempDir
-        if (Test-Path "$tempDir\vcpkg.exe") {
-          Write-Output "vcpkg.exe exists at $tempDir\vcpkg.exe"
-          & "$tempDir\vcpkg.exe" install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
+        if (Test-Path "$vcpkgDir\vcpkg.exe") {
+          Write-Output "vcpkg.exe exists at $vcpkgDir\vcpkg.exe"
+          & "$vcpkgDir\vcpkg.exe" install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
         } else {
-          Write-Output "vcpkg.exe not found at $tempDir\vcpkg.exe"
+          Write-Output "vcpkg.exe not found at $vcpkgDir\vcpkg.exe"
           exit 1
         }
       shell: pwsh
 
     - name: Set up DemoIccMAX
       run: |
-        $demoIccMaxDir = "$env:TEMP\DemoIccMAX"
+        $demoIccMaxDir = "$env:USERPROFILE\DemoIccMAX"
         if (!(Test-Path -Path $demoIccMaxDir)) {
           Write-Output "DemoIccMAX not found, cloning..."
           git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git $demoIccMaxDir
@@ -59,7 +58,7 @@ jobs:
 
     - name: Build DemoIccMAX solution
       run: |
-        $demoIccMaxDir = "$env:TEMP\DemoIccMAX"
+        $demoIccMaxDir = "$env:USERPROFILE\DemoIccMAX"
         cd $demoIccMaxDir
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
         & "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64 /maxcpucount:$maxCpuCount
@@ -68,7 +67,7 @@ jobs:
 
     - name: Manually build IccApplyToLink with AddressSanitizer
       run: |
-        $demoIccMaxDir = "$env:TEMP\DemoIccMAX"
+        $demoIccMaxDir = "$env:USERPROFILE\DemoIccMAX"
         cd $demoIccMaxDir
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
         & "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
@@ -77,9 +76,9 @@ jobs:
 
     - name: Manually build IccFromCube with AddressSanitizer
       run: |
-        $demoIccMaxDir = "$env:TEMP\DemoIccMAX"
+        $demoIccMaxDir = "$env:USERPROFILE\DemoIccMAX"
         cd $demoIccMaxDir
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
-        & "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform:x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
+        & "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
         & "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform:x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
       shell: pwsh

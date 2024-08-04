@@ -37,6 +37,17 @@ jobs:
         }
       shell: pwsh
 
+    - name: Set up environment variables for dependencies
+      run: |
+        $vcpkgDir = "$env:USERPROFILE\vcpkg"
+        $env:LIBXML2_INCLUDE = Join-Path -Path $vcpkgDir -ChildPath "installed\x64-windows\include\libxml2"
+        $env:LIBTIFF_INCLUDE = Join-Path -Path $vcpkgDir -ChildPath "installed\x64-windows\include"
+        $env:WXWIDGETS_INCLUDE = Join-Path -Path $vcpkgDir -ChildPath "installed\x64-windows\include"
+        $env:LIBXML2_LIB = Join-Path -Path $vcpkgDir -ChildPath "installed\x64-windows\lib"
+        $env:LIBTIFF_LIB = Join-Path -Path $vcpkgDir -ChildPath "installed\x64-windows\lib"
+        $env:WXWIDGETS_LIB = Join-Path -Path $vcpkgDir -ChildPath "installed\x64-windows\lib"
+      shell: pwsh
+
     - name: Set up DemoIccMAX
       run: |
         $demoIccMaxDir = "$env:USERPROFILE\DemoIccMAX"
@@ -127,5 +138,5 @@ jobs:
         $msbuildPath = "${{ steps.msbuild.outputs.msbuild_path }}"
         $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
         & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
-        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform:x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
+        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount
       shell: pwsh

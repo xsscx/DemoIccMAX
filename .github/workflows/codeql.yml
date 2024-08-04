@@ -30,6 +30,7 @@ jobs:
         }
         if (Test-Path "$vcpkgDir\vcpkg.exe") {
           Write-Output "vcpkg.exe exists at $vcpkgDir\vcpkg.exe"
+          & "$vcpkgDir\vcpkg.exe" integrate install
           & "$vcpkgDir\vcpkg.exe" install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
         } else {
           Write-Output "vcpkg.exe not found at $vcpkgDir\vcpkg.exe"
@@ -43,9 +44,13 @@ jobs:
         $env:VCPKG_ROOT = $vcpkgDir
         $env:VCPKG_DEFAULT_TRIPLET = "x64-windows"
         $env:PATH += ";$vcpkgDir\installed\x64-windows\bin;$vcpkgDir\installed\x64-windows\debug\bin"
+        $env:INCLUDE += ";$vcpkgDir\installed\x64-windows\include"
+        $env:LIB += ";$vcpkgDir\installed\x64-windows\lib;$vcpkgDir\installed\x64-windows\debug\lib"
         Write-Output "VCPKG_ROOT: $env:VCPKG_ROOT"
         Write-Output "VCPKG_DEFAULT_TRIPLET: $env:VCPKG_DEFAULT_TRIPLET"
         Write-Output "PATH: $env:PATH"
+        Write-Output "INCLUDE: $env:INCLUDE"
+        Write-Output "LIB: $env:LIB"
       shell: pwsh
 
     - name: Set up DemoIccMAX

@@ -45,10 +45,11 @@ jobs:
         echo "MSBUILD_PATH=$msbuildPath" >> $env:GITHUB_ENV
       shell: powershell
 
-    - name: Retarget solution to VS2022
+    - name: Update platform toolset to v143
       run: |
-        $solutionPath = ".\DemoIccMAX\Build\MSVC\BuildAll_v19.sln"
-        & "$env:MSBUILD_PATH" $solutionPath /t:RetargetProjects /p:PlatformToolset=v143
+        Get-ChildItem -Recurse -Filter *.vcxproj | ForEach-Object {
+          (Get-Content $_.FullName) -replace '<PlatformToolset>v142</PlatformToolset>', '<PlatformToolset>v143</PlatformToolset>' | Set-Content $_.FullName
+        }
       shell: powershell
 
     - name: Build with MSBuild

@@ -1,4 +1,4 @@
-name: Build DemoIccMAX
+name: Build and Sanitize
 
 on:
   push:
@@ -11,93 +11,36 @@ on:
 jobs:
   build:
     runs-on: self-hosted
-    strategy:
-      matrix:
-        configuration: [Debug, Release]
-        platform: [x64]
-    env:
-      VCPKG_ROOT: C:\vcpkg
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: Set up vcpkg
-        run: |
-          cd \tmp
-          if (-Not (Test-Path -Path $env:VCPKG_ROOT)) {
-            git clone https://github.com/microsoft/vcpkg.git $env:VCPKG_ROOT
-          }
-          cd $env:VCPKG_ROOT
-          .\bootstrap-vcpkg.bat
-          .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
-        shell: powershell
+    - name: Setup vcpkg
+      run: |
+        git clone https://github.com/microsoft/vcpkg.git
+        cd vcpkg
+        .\bootstrap-vcpkg.bat
 
-      - name: Restore vcpkg dependencies
-        run: C:\vcpkg\vcpkg.exe integrate install
-        shell: powershell
+    - name: Install dependencies with vcpkg
+      run: |
+        .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
+      shell: powershell
 
-      - name: Checkout DemoIccMAX repository if not exists
-        run: |
-          if (-Not (Test-Path -Path "C:\tmp\DemoIccMAX")) {
-            cd \tmp
-            git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
-          }
-        shell: powershell
+    - name: Checkout DemoIccMAX repository
+      run: |
+        git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
+        cd DemoIccMAX
+        git revert b90ac3933da99179df26351c39d8d9d706ac1cc6
+      shell: powershell
 
-      - name: Change to DemoIccMAX directory
-        run: cd \tmp\DemoIccMAX
-        shell: powershell
-
-      - name: Revert specific commit if necessary
-        run: |
-          cd \tmp\DemoIccMAX
-          try {
-            git revert b90ac3933da99179df26351c39d8d9d706ac1cc6 --no-edit
-          } catch {
-            Write-Host "No changes to revert"
-          }
-        shell: powershell
-        continue-on-error: true
-
-      - name: Retarget solution to use Visual Studio 2022 build tools
-        run: |
-          cd \tmp\DemoIccMAX
-          Get-ChildItem -Recurse -Include *.vcxproj | ForEach-Object {
-            (Get-Content $_.FullName) -replace 'v142', 'v143' | Set-Content $_.FullName
-          }
-          Get-ChildItem -Recurse -Include *.sln | ForEach-Object {
-            (Get-Content $_.FullName) -replace 'v142', 'v143' | Set-Content $_.FullName
-          }
-        shell: powershell
-
-      - name: Clean and build the solution
-        run: |
-          cd \tmp\DemoIccMAX
-          & "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }}
-          & "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Build\MSVC\BuildAll_v19.sln /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }}
-        shell: powershell
-
-      - name: Clean and build IccApplyToLink with AddressSanitizer
-        run: |
-          cd \tmp\DemoIccMAX
-          & "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
-          & "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
-        shell: powershell
-
-      - name: Clean and build IccFromCube with AddressSanitizer
-        run: |
-          cd \tmp\DemoIccMAX
-          & "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
-          & "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
-        shell: powershell
-
-      - name: Archive build artifacts
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-artifacts
-          path: |
-            \tmp\DemoIccMAX\Build\MSVC\BuildAll_v19\Debug\*
-            \tmp\DemoIccMAX\Tools\CmdLine\IccApplyToLink\Debug\*
-            \tmp\DemoIccMAX\Tools\CmdLine\IccFromCube\Debug\*
+    - name: Build with MSBuild
+      run: |
+        $msbuild = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+        & $msbuild .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64
+        & $msbuild .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+        & $msbuild .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+        & $msbuild .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+        & $msbuild .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+        & $msbuild .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+      shell: powershell

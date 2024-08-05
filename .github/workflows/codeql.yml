@@ -24,6 +24,7 @@ jobs:
 
       - name: Set up vcpkg
         run: |
+          cd \tmp
           git clone https://github.com/microsoft/vcpkg.git $env:VCPKG_ROOT
           cd $env:VCPKG_ROOT
           .\bootstrap-vcpkg.bat
@@ -34,25 +35,34 @@ jobs:
         run: C:\vcpkg\vcpkg.exe integrate install
         shell: cmd
 
+      - name: Checkout DemoIccMAX repository
+        run: |
+          cd \tmp
+          git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
+          cd DemoIccMAX
+        shell: powershell
+
       - name: Revert specific commit if necessary
-        run: git revert b90ac3933da99179df26351c39d8d9d706ac1cc6 --no-edit || echo "No changes to revert"
+        run: |
+          git -C \tmp\DemoIccMAX revert b90ac3933da99179df26351c39d8d9d706ac1cc6 --no-edit || echo "No changes to revert"
+        shell: cmd
 
       - name: Clean and build the solution
         run: |
-          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }}
-          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Build\MSVC\BuildAll_v19.sln /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }}
+          "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" \tmp\DemoIccMAX\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }}
+          "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" \tmp\DemoIccMAX\Build\MSVC\BuildAll_v19.sln /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }}
         shell: cmd
 
       - name: Clean and build IccApplyToLink with AddressSanitizer
         run: |
-          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
-          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+          "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" \tmp\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+          "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" \tmp\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
         shell: cmd
 
       - name: Clean and build IccFromCube with AddressSanitizer
         run: |
-          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
-          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+          "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" \tmp\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+          "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" \tmp\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
         shell: cmd
 
       - name: Archive build artifacts
@@ -61,6 +71,6 @@ jobs:
         with:
           name: build-artifacts
           path: |
-            .\Build\MSVC\BuildAll_v19\${{ matrix.configuration }}\*
-            .\Tools\CmdLine\IccApplyToLink\${{ matrix.configuration }}\*
-            .\Tools\CmdLine\IccFromCube\${{ matrix.configuration }}\*
+            \tmp\DemoIccMAX\Build\MSVC\BuildAll_v19\${{ matrix.configuration }}\*
+            \tmp\DemoIccMAX\Tools\CmdLine\IccApplyToLink\${{ matrix.configuration }}\*
+            \tmp\DemoIccMAX\Tools\CmdLine\IccFromCube\${{ matrix.configuration }}\*

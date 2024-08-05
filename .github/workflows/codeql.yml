@@ -68,12 +68,3 @@ jobs:
         & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
         & $msbuild .\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
       shell: powershell
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-artifacts
-        path: |
-          DemoIccMAX\Build\MSVC\x64\Debug\*
-          DemoIccMAX\Tools\CmdLine\IccApplyToLink\x64\Debug\*
-          DemoIccMAX\Tools\CmdLine\IccFromCube\x64\Debug\*

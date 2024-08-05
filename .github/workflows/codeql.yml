@@ -18,7 +18,7 @@ jobs:
 
     - name: Download vswhere
       run: |
-        $vswherePath = "$(System.DefaultWorkingDirectory)\vswhere.exe"
+        $vswherePath = "${{ runner.workspace }}\vswhere.exe"
         Invoke-WebRequest -Uri https://github.com/microsoft/vswhere/releases/download/2.8.4/vswhere.exe -OutFile $vswherePath
         echo "VSWHERE_PATH=$vswherePath" >> $env:GITHUB_ENV
       shell: powershell

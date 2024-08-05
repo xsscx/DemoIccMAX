@@ -25,7 +25,9 @@ jobs:
       - name: Set up vcpkg
         run: |
           cd \tmp
-          git clone https://github.com/microsoft/vcpkg.git $env:VCPKG_ROOT || echo "vcpkg already cloned"
+          if (-Not (Test-Path -Path $env:VCPKG_ROOT)) {
+            git clone https://github.com/microsoft/vcpkg.git $env:VCPKG_ROOT
+          }
           cd $env:VCPKG_ROOT
           .\bootstrap-vcpkg.bat
           .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows

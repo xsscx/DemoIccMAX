@@ -48,26 +48,23 @@ jobs:
         echo "MSBUILD_PATH=$msbuildPath" >> $env:GITHUB_ENV
       shell: powershell
 
-    - name: Build Project
+    - name: Update platform toolset to v143
       run: |
-        $msbuild = $env:MSBUILD_PATH
-        & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
-      shell: powershell
-
-    - name: Update platform toolset to v143 for specific projects
-      run: |
-        $projectsToUpdate = @(
-          ".\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj",
-          ".\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj"
-        )
-        foreach ($project in $projectsToUpdate) {
-          (Get-Content $project) -replace '<PlatformToolset>v142</PlatformToolset>', '<PlatformToolset>v143</PlatformToolset>' | Set-Content $project
+        Get-ChildItem -Recurse -Filter *.vcxproj | ForEach-Object {
+          (Get-Content $_.FullName) -replace '<PlatformToolset>v142</PlatformToolset>', '<PlatformToolset>v143</PlatformToolset>' | Set-Content $_.FullName
         }
       shell: powershell
 
-    - name: BuildExtras with MSBuild
+    - name: Build IccProfLib
       run: |
         $msbuild = $env:MSBUILD_PATH
+        & $msbuild .\DemoIccMAX\IccProfLib\IccProfLib_v19.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+      shell: powershell
+
+    - name: Build with MSBuild
+      run: |
+        $msbuild = $env:MSBUILD_PATH
+        & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
         & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
         & $msbuild .\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
       shell: powershell

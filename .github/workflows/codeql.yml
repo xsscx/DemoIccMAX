@@ -10,168 +10,57 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+        platform: [x64]
+    env:
+      VCPKG_ROOT: C:\vcpkg
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up vcpkg
-      run: |
-        $vcpkgDir = "$env:USERPROFILE\vcpkg"
-        if (!(Test-Path -Path $vcpkgDir)) {
-          Write-Output "vcpkg not found, cloning and bootstrapping..."
-          git clone https://github.com/microsoft/vcpkg.git $vcpkgDir
-          cd $vcpkgDir
-          cmd /c bootstrap-vcpkg.bat
-        } else {
-          Write-Output "vcpkg already set up."
-          cd $vcpkgDir
-        }
-        if (Test-Path "$vcpkgDir\vcpkg.exe") {
-          Write-Output "vcpkg.exe exists at $vcpkgDir\vcpkg.exe"
-          & "$vcpkgDir\vcpkg.exe" integrate install
-          & "$vcpkgDir\vcpkg.exe" install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
-        } else {
-          Write-Output "vcpkg.exe not found at $vcpkgDir\vcpkg.exe"
-          exit 1
-        }
-      shell: pwsh
+      - name: Set up vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git $env:VCPKG_ROOT
+          cd $env:VCPKG_ROOT
+          .\bootstrap-vcpkg.bat
+          .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
+        shell: powershell
 
-    - name: Retarget solution to use v143
-      run: |
-        $solutionDir = "$env:USERPROFILE\DemoIccMAX"
-        cd $solutionDir
-        function Update-PlatformToolset {
-            param (
-                [string]$filePath,
-                [string]$newToolset = "v143"
-            )
-            
-            (Get-Content $filePath) -replace 'v142', $newToolset | Set-Content $filePath
-        }
-        Get-ChildItem -Path $solutionDir -Recurse -Filter *.vcxproj | ForEach-Object {
-            Update-PlatformToolset -filePath $_.FullName
-        }
-      shell: pwsh
+      - name: Restore vcpkg dependencies
+        run: .\vcpkg\vcpkg.exe integrate install
+        shell: powershell
 
-    - name: Set up environment variables for dependencies
-      run: |
-        $vcpkgDir = "$env:USERPROFILE\vcpkg"
-        echo "VCPKG_ROOT=$vcpkgDir" >> $env:GITHUB_ENV
-        echo "VCPKG_DEFAULT_TRIPLET=x64-windows" >> $env:GITHUB_ENV
-        echo "PATH=$env:PATH;$vcpkgDir\installed\x64-windows\bin;$vcpkgDir\installed\x64-windows\debug\bin" >> $env:GITHUB_ENV
-        echo "INCLUDE=$env:INCLUDE;$vcpkgDir\installed\x64-windows\include" >> $env:GITHUB_ENV
-        echo "LIB=$env:LIB;$vcpkgDir\installed\x64-windows\lib;$vcpkgDir\installed\x64-windows\debug\lib" >> $env:GITHUB_ENV
+      - name: Revert specific commit if necessary
+        run: git revert b90ac3933da99179df26351c39d8d9d706ac1cc6 --no-edit || echo "No changes to revert"
 
-        # Debugging: Print the contents of the include and lib directories
-        Write-Output "Contents of INCLUDE directory:"
-        Get-ChildItem -Path "$vcpkgDir\installed\x64-windows\include"
+      - name: Clean and build the solution
+        run: |
+          &"C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }}
+          &"C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Build\MSVC\BuildAll_v19.sln /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }}
+        shell: powershell
 
-        Write-Output "Contents of LIB directory:"
-        Get-ChildItem -Path "$vcpkgDir\installed\x64-windows\lib"
+      - name: Clean and build IccApplyToLink with AddressSanitizer
+        run: |
+          &"C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+          &"C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+        shell: powershell
 
-        Write-Output "Contents of Debug LIB directory:"
-        Get-ChildItem -Path "$vcpkgDir\installed\x64-windows\debug\lib"
-      shell: pwsh
+      - name: Clean and build IccFromCube with AddressSanitizer
+        run: |
+          &"C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+          &"C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+        shell: powershell
 
-    - name: Set up DemoIccMAX
-      run: |
-        $demoIccMaxDir = "$env:USERPROFILE\DemoIccMAX"
-        if (!(Test-Path -Path $demoIccMaxDir)) {
-          Write-Output "DemoIccMAX not found, cloning..."
-          git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git $demoIccMaxDir
-          cd $demoIccMaxDir
-          git config user.email "you@example.com"
-          git config user.name "Your Name"
-          git revert b90ac3933da99179df26351c39d8d9d706ac1cc6 --no-edit
-        } else {
-          Write-Output "DemoIccMAX already set up."
-          cd $demoIccMaxDir
-        }
-        Write-Output "Current directory: $PWD"
-        Write-Output "Listing files in the current directory:"
-        Get-ChildItem -Recurse -File -Name
-      shell: pwsh
-
-    - name: Find MSBuild.exe
-      id: msbuild
-      run: |
-        $paths = @(
-          "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe",
-          "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
-        )
-        
-        $msbuildPath = $null
-        foreach ($path in $paths) {
-          if (Test-Path $path) {
-            $msbuildPath = $path
-            break
-          }
-        }
-        
-        if ($msbuildPath -eq $null) {
-          Write-Error "MSBuild.exe not found in known locations."
-          exit 1
-        }
-        
-        Write-Output "MSBuild.exe found at $msbuildPath"
-        echo "MSBUILD_PATH=$msbuildPath" >> $env:GITHUB_ENV
-      shell: pwsh
-
-    - name: Build DemoIccMAX solution
-      run: |
-        $demoIccMaxDir = "$env:USERPROFILE\DemoIccMAX"
-        cd $demoIccMaxDir
-        $msbuildPath = "$env:MSBUILD_PATH"
-        $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
-
-        # Explicitly adding the INCLUDE and LIB paths in the msbuild command
-        $includePath = "$env:INCLUDE;$env:VCPKG_ROOT\installed\x64-windows\include"
-        $libPath = "$env:LIB;$env:VCPKG_ROOT\installed\x64-windows\lib;$env:VCPKG_ROOT\installed\x64-windows\debug\lib"
-
-        # Ensure paths are correctly formatted for MSBuild
-        $includePathEscaped = $includePath -replace ';', '`;'
-        $libPathEscaped = $libPath -replace ';', '`;'
-
-        & $msbuildPath .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64 /maxcpucount:$maxCpuCount "/p:IncludePath=$includePathEscaped" "/p:LibraryPath=$libPathEscaped"
-        & $msbuildPath .\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64 /maxcpucount:$maxCpuCount "/p:IncludePath=$includePathEscaped" "/p:LibraryPath=$libPathEscaped"
-      shell: pwsh
-
-    - name: Manually build IccApplyToLink with AddressSanitizer
-      run: |
-        $demoIccMaxDir = "$env:USERPROFILE\DemoIccMAX"
-        cd $demoIccMaxDir
-        $msbuildPath = "$env:MSBUILD_PATH"
-        $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
-
-        # Use the INCLUDE and LIB paths from the environment variables
-        $includePath = "$env:INCLUDE;$env:VCPKG_ROOT\installed\x64-windows\include"
-        $libPath = "$env:LIB;$env:VCPKG_ROOT\installed\x64-windows\lib;$env:VCPKG_ROOT\installed\x64-windows\debug\lib"
-
-        # Ensure paths are correctly formatted for MSBuild
-        $includePathEscaped = $includePath -replace ';', '`;'
-        $libPathEscaped = $libPath -replace ';', '`;'
-
-        & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount "/p:IncludePath=$includePathEscaped" "/p:LibraryPath=$libPathEscaped"
-        & $msbuildPath .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount "/p:IncludePath=$includePathEscaped" "/p:LibraryPath=$libPathEscaped"
-      shell: pwsh
-
-    - name: Manually build IccFromCube with AddressSanitizer
-      run: |
-        $demoIccMaxDir = "$env:USERPROFILE\DemoIccMAX"
-        cd $demoIccMaxDir
-        $msbuildPath = "$env:MSBUILD_PATH"
-        $maxCpuCount = (Get-WmiObject -Class Win32_ComputerSystem).NumberOfLogicalProcessors
-
-        # Use the INCLUDE and LIB paths from the environment variables
-        $includePath = "$env:INCLUDE;$env:VCPKG_ROOT\installed\x64-windows\include"
-        $libPath = "$env:LIB;$env:VCPKG_ROOT\installed\x64-windows\lib;$env:VCPKG_ROOT\installed\x64-windows\debug\lib"
-
-        # Ensure paths are correctly formatted for MSBuild
-        $includePathEscaped = $includePath -replace ';', '`;'
-        $libPathEscaped = $libPath -replace ';', '`;'
-
-        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount "/p:IncludePath=$includePathEscaped" "/p:LibraryPath=$libPathEscaped"
-        & $msbuildPath .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform:x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address" /maxcpucount:$maxCpuCount "/p:IncludePath=$includePathEscaped" "/p:LibraryPath=$libPathEscaped"
-      shell: pwsh
+      - name: Archive build artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            .\Build\MSVC\BuildAll_v19\${{ matrix.configuration }}\*
+            .\Tools\CmdLine\IccApplyToLink\${{ matrix.configuration }}\*
+            .\Tools\CmdLine\IccFromCube\${{ matrix.configuration }}\*

@@ -36,6 +36,8 @@ jobs:
       run: |
         git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
         cd DemoIccMAX
+        git config user.email "you@example.com"
+        git config user.name "Your Name"
         git revert b90ac3933da99179df26351c39d8d9d706ac1cc6
       shell: powershell
 

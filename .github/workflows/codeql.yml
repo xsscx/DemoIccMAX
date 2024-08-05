@@ -20,11 +20,8 @@ jobs:
       run: |
         git clone https://github.com/microsoft/vcpkg.git
         cd vcpkg
-        .\bootstrap-vcpkg.bat
-
-    - name: Install dependencies with vcpkg
-      run: |
-        .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
+        Invoke-WebRequest -Uri https://github.com/microsoft/vcpkg-tool/releases/download/2024-08-01/vcpkg.exe -OutFile ./vcpkg.exe
+        ./vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
       shell: powershell
 
     - name: Checkout DemoIccMAX repository

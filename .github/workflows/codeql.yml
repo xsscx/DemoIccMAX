@@ -18,7 +18,9 @@ jobs:
 
     - name: Download vswhere
       run: |
-        Invoke-WebRequest -Uri https://github.com/microsoft/vswhere/releases/download/2.8.4/vswhere.exe -OutFile C:\vswhere.exe
+        $vswherePath = "$(System.DefaultWorkingDirectory)\vswhere.exe"
+        Invoke-WebRequest -Uri https://github.com/microsoft/vswhere/releases/download/2.8.4/vswhere.exe -OutFile $vswherePath
+        echo "VSWHERE_PATH=$vswherePath" >> $env:GITHUB_ENV
       shell: powershell
 
     - name: Setup vcpkg
@@ -39,7 +41,7 @@ jobs:
     - name: Find MSBuild Path
       id: msbuild
       run: |
-        $msbuildPath = &"C:\vswhere.exe" -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+        $msbuildPath = &"$env:VSWHERE_PATH" -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
         echo "MSBUILD_PATH=$msbuildPath" >> $env:GITHUB_ENV
       shell: powershell
 

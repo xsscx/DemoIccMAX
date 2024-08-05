@@ -48,7 +48,7 @@ jobs:
     - name: Retarget solution to VS2022
       run: |
         $solutionPath = ".\DemoIccMAX\Build\MSVC\BuildAll_v19.sln"
-        & "$env:MSBUILD_PATH" $solutionPath /t:upgrade /p:PlatformToolset=v143
+        & "$env:MSBUILD_PATH" $solutionPath /t:RetargetProjects /p:PlatformToolset=v143
       shell: powershell
 
     - name: Build with MSBuild

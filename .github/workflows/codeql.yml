@@ -54,6 +54,7 @@ jobs:
         run: |
           git -C \tmp\DemoIccMAX revert b90ac3933da99179df26351c39d8d9d706ac1cc6 --no-edit || echo "No changes to revert"
         shell: cmd
+        continue-on-error: true
 
       - name: Retarget solution to use Visual Studio 2022 build tools
         run: |

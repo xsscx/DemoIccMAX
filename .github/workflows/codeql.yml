@@ -46,13 +46,17 @@ jobs:
         shell: powershell
 
       - name: Change to DemoIccMAX directory
-        run: |
-          cd \tmp\DemoIccMAX
+        run: cd \tmp\DemoIccMAX
         shell: powershell
 
       - name: Revert specific commit if necessary
         run: |
-          git -C \tmp\DemoIccMAX revert b90ac3933da99179df26351c39d8d9d706ac1cc6 --no-edit || echo "No changes to revert"
+          cd \tmp\DemoIccMAX
+          try {
+            git revert b90ac3933da99179df26351c39d8d9d706ac1cc6 --no-edit
+          } catch {
+            Write-Host "No changes to revert"
+          }
         shell: powershell
         continue-on-error: true
 

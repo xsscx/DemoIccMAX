@@ -31,15 +31,22 @@ jobs:
         git revert b90ac3933da99179df26351c39d8d9d706ac1cc6
       shell: powershell
 
+    - name: Find MSBuild Path
+      id: msbuild
+      run: |
+        $msbuildPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+        echo "MSBUILD_PATH=$msbuildPath" >> $env:GITHUB_ENV
+      shell: powershell
+
     - name: Retarget solution to VS2022
       run: |
         $solutionPath = ".\DemoIccMAX\Build\MSVC\BuildAll_v19.sln"
-        & "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\Common7\IDE\devenv.com" $solutionPath /Upgrade
+        & "$env:MSBUILD_PATH" $solutionPath /t:upgrade /p:PlatformToolset=v143
       shell: powershell
 
     - name: Build with MSBuild
       run: |
-        $msbuild = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+        $msbuild = $env:MSBUILD_PATH
         & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64
         & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
         & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"

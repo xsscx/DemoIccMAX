@@ -70,22 +70,22 @@ jobs:
       - name: Clean and build the solution
         run: |
           cd \tmp\DemoIccMAX
-          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }}
-          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Build\MSVC\BuildAll_v19.sln /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }}
+          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64
+          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64
         shell: cmd
 
       - name: Clean and build IccApplyToLink with AddressSanitizer
         run: |
           cd \tmp\DemoIccMAX
-          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
-          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
         shell: cmd
 
       - name: Clean and build IccFromCube with AddressSanitizer
         run: |
           cd \tmp\DemoIccMAX
-          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
-          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+          "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
         shell: cmd
 
       - name: Archive build artifacts
@@ -94,6 +94,6 @@ jobs:
         with:
           name: build-artifacts
           path: |
-            \tmp\DemoIccMAX\Build\MSVC\BuildAll_v19\${{ matrix.configuration }}\*
-            \tmp\DemoIccMAX\Tools\CmdLine\IccApplyToLink\${{ matrix.configuration }}\*
-            \tmp\DemoIccMAX\Tools\CmdLine\IccFromCube\${{ matrix.configuration }}\*
+            \tmp\DemoIccMAX\Build\MSVC\BuildAll_v19\Debug\*
+            \tmp\DemoIccMAX\Tools\CmdLine\IccApplyToLink\Debug\*
+            \tmp\DemoIccMAX\Tools\CmdLine\IccFromCube\Debug\*

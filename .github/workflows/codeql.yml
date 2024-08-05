@@ -16,6 +16,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Download vswhere
+      run: |
+        Invoke-WebRequest -Uri https://github.com/microsoft/vswhere/releases/download/2.8.4/vswhere.exe -OutFile C:\vswhere.exe
+      shell: powershell
+
     - name: Setup vcpkg
       run: |
         git clone https://github.com/microsoft/vcpkg.git
@@ -34,7 +39,7 @@ jobs:
     - name: Find MSBuild Path
       id: msbuild
       run: |
-        $msbuildPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+        $msbuildPath = &"C:\vswhere.exe" -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
         echo "MSBUILD_PATH=$msbuildPath" >> $env:GITHUB_ENV
       shell: powershell
 

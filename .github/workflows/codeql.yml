@@ -52,6 +52,12 @@ jobs:
         }
       shell: powershell
 
+    - name: Build IccProfLib
+      run: |
+        $msbuild = $env:MSBUILD_PATH
+        & $msbuild .\DemoIccMAX\IccProfLib\IccProfLib_v19.vcxproj /p:Configuration=Debug /p:Platform=x64
+      shell: powershell
+
     - name: Build with MSBuild
       run: |
         $msbuild = $env:MSBUILD_PATH

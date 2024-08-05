@@ -31,13 +31,19 @@ jobs:
         git revert b90ac3933da99179df26351c39d8d9d706ac1cc6
       shell: powershell
 
+    - name: Retarget solution to VS2022
+      run: |
+        $solutionPath = ".\DemoIccMAX\Build\MSVC\BuildAll_v19.sln"
+        & "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\Common7\IDE\devenv.com" $solutionPath /Upgrade
+      shell: powershell
+
     - name: Build with MSBuild
       run: |
         $msbuild = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
-        & $msbuild .\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64
-        & $msbuild .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
-        & $msbuild .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
-        & $msbuild .\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
-        & $msbuild .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
-        & $msbuild .\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+        & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v19.sln /t:clean /p:Configuration=Debug /p:Platform=x64
+        & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+        & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+        & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+        & $msbuild .\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /t:clean /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+        & $msbuild .\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
       shell: powershell

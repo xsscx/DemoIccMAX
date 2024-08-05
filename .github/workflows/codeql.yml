@@ -38,6 +38,23 @@ jobs:
         }
       shell: pwsh
 
+    - name: Retarget solution to use v143
+      run: |
+        $solutionDir = "$env:USERPROFILE\DemoIccMAX"
+        cd $solutionDir
+        function Update-PlatformToolset {
+            param (
+                [string]$filePath,
+                [string]$newToolset = "v143"
+            )
+            
+            (Get-Content $filePath) -replace 'v142', $newToolset | Set-Content $filePath
+        }
+        Get-ChildItem -Path $solutionDir -Recurse -Filter *.vcxproj | ForEach-Object {
+            Update-PlatformToolset -filePath $_.FullName
+        }
+      shell: pwsh
+
     - name: Set up environment variables for dependencies
       run: |
         $vcpkgDir = "$env:USERPROFILE\vcpkg"
@@ -75,23 +92,6 @@ jobs:
         Write-Output "Current directory: $PWD"
         Write-Output "Listing files in the current directory:"
         Get-ChildItem -Recurse -File -Name
-      shell: pwsh
-
-    - name: Retarget solution to use v143
-      run: |
-        $solutionDir = "$env:USERPROFILE\DemoIccMAX"
-        cd $solutionDir
-        function Update-PlatformToolset {
-            param (
-                [string]$filePath,
-                [string]$newToolset = "v143"
-            )
-            
-            (Get-Content $filePath) -replace 'v142', $newToolset | Set-Content $filePath
-        }
-        Get-ChildItem -Path $solutionDir -Recurse -Filter *.vcxproj | ForEach-Object {
-            Update-PlatformToolset -filePath $_.FullName
-        }
       shell: pwsh
 
     - name: Find MSBuild.exe

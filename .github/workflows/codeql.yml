@@ -48,10 +48,10 @@ jobs:
         echo "MSBUILD_PATH=$msbuildPath" >> $env:GITHUB_ENV
       shell: powershell
 
-    - name: Build IccProfLib
+    - name: Build Project
       run: |
         $msbuild = $env:MSBUILD_PATH
-        & $msbuild .\DemoIccMAX\IccProfLib\IccProfLib_v22.vcxproj /p:Configuration=Debug /p:Platform=x64
+        & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v22.sln /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
       shell: powershell
 
     - name: Update platform toolset to v143 for specific projects

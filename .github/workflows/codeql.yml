@@ -51,7 +51,7 @@ jobs:
     - name: Build Project
       run: |
         $msbuild = $env:MSBUILD_PATH
-        & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v22.sln /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
+        & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/fsanitize=address" /p:LinkToolAdditionalOptions="/fsanitize=address"
       shell: powershell
 
     - name: Update platform toolset to v143 for specific projects

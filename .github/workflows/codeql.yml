@@ -76,38 +76,15 @@ jobs:
         & $msbuild .\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${env:VCPKG_INCLUDE}" /p:LinkToolAdditionalOptions="/LIBPATH:${env:VCPKG_LIBRARY} /fsanitize=address"
       shell: powershell
 
-    - name: Identify and copy target output files
+    - name: Identify and copy all .exe, .dll, and .lib files
       run: |
         $outputPackageDir = "${{ runner.workspace }}\DemoIccMAX\Package"
         New-Item -ItemType Directory -Path $outputPackageDir -Force
 
-        $targetFiles = @(
-          "Tools\CmdLine\IccSpecSepToTiff\x64\Debug\iccSpecSepToTiff.exe",
-          "Tools\CmdLine\IccApplyToLink\x64\Debug\iccApplyToLink.exe",
-          "Tools\CmdLine\IccFromCube\x64\Debug\iccFromCube.exe",
-          "Tools\CmdLine\IccDumpProfile\x64\Debug\iccDumpProfile.exe",
-          "Tools\CmdLine\IccTiffDump\x64\Debug\iccTiffDump.exe",
-          "Tools\CmdLine\IccRoundTrip\x64\Debug\iccRoundTrip.exe",
-          "Tools\CmdLine\IccApplyNamedCmm\x64\Debug\iccApplyNamedCmm.exe",
-          "Tools\CmdLine\IccApplyProfiles\x64\Debug\iccApplyProfiles.exe",
-          "IccXML\CmdLine\IccFromXml\x64\Debug\IccFromXml.exe",
-          "IccXML\CmdLine\IccToXml\x64\Debug\IccToXml.exe",
-          "DemoIccMAXCmm.dll",
-          "DemoIccMAXCmm.lib",
-          "IccLibXML_CRTDLL.lib",
-          "IccLibXml.lib",
-          "IccProfLib_CRTDLL.lib",
-          "IccProfLib_DLL.dll",
-          "IccProfLib_DLL.lib",
-          "IccProfLib.lib"
-        )
-
-        foreach ($file in $targetFiles) {
-          $fullPath = Join-Path -Path "${{ runner.workspace }}" -ChildPath $file
-          if (Test-Path $fullPath) {
-            Copy-Item -Path $fullPath -Destination $outputPackageDir
-          } else {
-            Write-Output "File not found: $fullPath"
+        $filePatterns = @("*.exe", "*.dll", "*.lib")
+        foreach ($pattern in $filePatterns) {
+          Get-ChildItem -Path "${{ runner.workspace }}\DemoIccMAX" -Recurse -Filter $pattern | ForEach-Object {
+            Copy-Item -Path $_.FullName -Destination $outputPackageDir
           }
         }
 

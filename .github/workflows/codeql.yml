@@ -28,7 +28,7 @@ jobs:
       run: |
         git clone https://github.com/microsoft/vcpkg.git
         cd vcpkg
-        Invoke-WebRequest -Uri https://github.com/microsoft/vcpkg-tool/releases/download/2024-08-01/vcpkg.exe -OutFile ./vcpkg.exe
+        ./bootstrap-vcpkg.bat
         ./vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libjpeg-turbo:x64-windows libpng:x64-windows zlib:x64-windows pcre2:x64-windows expat:x64-windows
         echo "VCPKG_ROOT=${{ runner.workspace }}/vcpkg" >> $env:GITHUB_ENV
       shell: powershell
@@ -76,38 +76,41 @@ jobs:
         & $msbuild .\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${env:VCPKG_INCLUDE}" /p:LinkToolAdditionalOptions="/LIBPATH:${env:VCPKG_LIBRARY} /fsanitize=address"
       shell: powershell
 
-    - name: Identify and list output files
+    - name: Identify and copy target output files
       run: |
         $outputPackageDir = "${{ runner.workspace }}\DemoIccMAX\Package"
         New-Item -ItemType Directory -Path $outputPackageDir -Force
-        $libFiles = @()
-        $dllFiles = @()
-        $exeFiles = @()
-        function Categorize-Files {
-            param (
-                [string]$filePath
-            )
-            $extension = [System.IO.Path]::GetExtension($filePath).ToLower()
-            switch ($extension) {
-                ".lib" { $global:libFiles += $filePath }
-                ".dll" { $global:dllFiles += $filePath }
-                ".exe" { $global:exeFiles += $filePath }
-            }
+
+        $targetFiles = @(
+          "Tools\CmdLine\IccSpecSepToTiff\x64\Debug\iccSpecSepToTiff.exe",
+          "Tools\CmdLine\IccApplyToLink\x64\Debug\iccApplyToLink.exe",
+          "Tools\CmdLine\IccFromCube\x64\Debug\iccFromCube.exe",
+          "Tools\CmdLine\IccDumpProfile\x64\Debug\iccDumpProfile.exe",
+          "Tools\CmdLine\IccTiffDump\x64\Debug\iccTiffDump.exe",
+          "Tools\CmdLine\IccRoundTrip\x64\Debug\iccRoundTrip.exe",
+          "Tools\CmdLine\IccApplyNamedCmm\x64\Debug\iccApplyNamedCmm.exe",
+          "Tools\CmdLine\IccApplyProfiles\x64\Debug\iccApplyProfiles.exe",
+          "IccXML\CmdLine\IccFromXml\x64\Debug\IccFromXml.exe",
+          "IccXML\CmdLine\IccToXml\x64\Debug\IccToXml.exe",
+          "DemoIccMAXCmm.dll",
+          "DemoIccMAXCmm.lib",
+          "IccLibXML_CRTDLL.lib",
+          "IccLibXml.lib",
+          "IccProfLib_CRTDLL.lib",
+          "IccProfLib_DLL.dll",
+          "IccProfLib_DLL.lib",
+          "IccProfLib.lib"
+        )
+
+        foreach ($file in $targetFiles) {
+          $fullPath = Join-Path -Path "${{ runner.workspace }}" -ChildPath $file
+          if (Test-Path $fullPath) {
+            Copy-Item -Path $fullPath -Destination $outputPackageDir
+          } else {
+            Write-Output "File not found: $fullPath"
+          }
         }
-        $demoIccMaxDir = "${{ runner.workspace }}\DemoIccMAX"
-        $allFiles = Get-ChildItem -Path $demoIccMaxDir -Recurse -File
-        foreach ($file in $allFiles) {
-            Categorize-Files -filePath $file.FullName
-        }
-        Write-Output "Library (.lib) files:"
-        $libFiles | ForEach-Object { Write-Output $_ }
-        Write-Output "`nDLL (.dll) files:"
-        $dllFiles | ForEach-Object { Write-Output $_ }
-        Write-Output "`nExecutable (.exe) files:"
-        $exeFiles | ForEach-Object { Write-Output $_ }
-        $libFiles | ForEach-Object { Copy-Item -Path $_ -Destination $outputPackageDir }
-        $dllFiles | ForEach-Object { Copy-Item -Path $_ -Destination $outputPackageDir }
-        $exeFiles | ForEach-Object { Copy-Item -Path $_ -Destination $outputPackageDir }
+
         Write-Output "Files copied to $outputPackageDir"
       shell: powershell
 

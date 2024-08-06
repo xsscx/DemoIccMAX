@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: self-hosted
 
     steps:
     - name: Checkout repository
@@ -59,7 +59,6 @@ jobs:
       run: |
         $installedLibDir = "${{ runner.workspace }}\vcpkg\installed\x64-windows\lib"
         $packagesDir = "${{ runner.workspace }}\vcpkg\packages"
-
         $libMapping = @{
             "wxjpegd.lib" = "libjpeg-turbo_x64-windows\lib\jpeg.lib"
             "wxpngd.lib" = "libpng_x64-windows\lib\libpng16.lib"
@@ -67,7 +66,6 @@ jobs:
             "wxregexd.lib" = "pcre2_x64-windows\lib\pcre2-8.lib"
             "wxexpatd.lib" = "expat_x64-windows\lib\libexpat.lib"
         }
-
         function Create-Symlink {
             param (
                 [string]$linkName,
@@ -75,7 +73,6 @@ jobs:
             )
             $linkPath = Join-Path $installedLibDir $linkName
             $targetFullPath = Join-Path $packagesDir $targetPath
-
             if (Test-Path $targetFullPath) {
                 if (Test-Path $linkPath) {
                     Remove-Item $linkPath
@@ -83,7 +80,6 @@ jobs:
                 New-Item -ItemType SymbolicLink -Path $linkPath -Target $targetFullPath
             }
         }
-
         foreach ($lib in $libMapping.GetEnumerator()) {
             Create-Symlink -linkName $lib.Key -targetPath $lib.Value
         }
@@ -95,18 +91,14 @@ jobs:
             param (
                 [string]$projectPath
             )
-
             $xml = [xml](Get-Content $projectPath)
-
             $propertyGroups = $xml.Project.PropertyGroup | Where-Object { $_.OutputFile -ne $null }
             foreach ($propertyGroup in $propertyGroups) {
                 $outputFile = $propertyGroup.OutputFile
-
                 if ($outputFile) {
                     $outputDir = [System.IO.Path]::GetDirectoryName($outputFile)
                     $outputName = [System.IO.Path]::GetFileNameWithoutExtension($outputFile)
                     $outputExt = [System.IO.Path]::GetExtension($outputFile)
-
                     if ($propertyGroup.OutDir -eq $null) {
                         $newOutDir = $xml.CreateElement("OutDir")
                         $newOutDir.InnerText = "$outputDir\"
@@ -114,7 +106,6 @@ jobs:
                     } else {
                         $propertyGroup.OutDir = "$outputDir\"
                     }
-
                     if ($propertyGroup.TargetName -eq $null) {
                         $newTargetName = $xml.CreateElement("TargetName")
                         $newTargetName.InnerText = $outputName
@@ -122,7 +113,6 @@ jobs:
                     } else {
                         $propertyGroup.TargetName = $outputName
                     }
-
                     if ($propertyGroup.TargetExt -eq $null) {
                         $newTargetExt = $xml.CreateElement("TargetExt")
                         $newTargetExt.InnerText = $outputExt
@@ -132,10 +122,8 @@ jobs:
                     }
                 }
             }
-
             $xml.Save($projectPath)
         }
-
         Get-ChildItem -Recurse -Filter *.vcxproj | ForEach-Object {
             Update-ProjectFiles -projectPath $_.FullName
         }
@@ -159,11 +147,9 @@ jobs:
       run: |
         $outputPackageDir = "${{ runner.workspace }}\DemoIccMAX\Package"
         New-Item -ItemType Directory -Path $outputPackageDir -Force
-
         $libFiles = @()
         $dllFiles = @()
         $exeFiles = @()
-
         function Categorize-Files {
             param (
                 [string]$filePath
@@ -175,21 +161,21 @@ jobs:
                 ".exe" { $global:exeFiles += $filePath }
             }
         }
-
         $allFiles = Get-ChildItem -Path $projectDir -Recurse -File
-
         foreach ($file in $allFiles) {
             Categorize-Files -filePath $file.FullName
         }
-
         Write-Output "Library (.lib) files:" | Out-File -FilePath "$outputPackageDir\file_list.txt" -Append
         $libFiles | ForEach-Object { $_ | Out-File -FilePath "$outputPackageDir\file_list.txt" -Append }
-
         Write-Output "`nDLL (.dll) files:" | Out-File -FilePath "$outputPackageDir\file_list.txt" -Append
         $dllFiles | ForEach-Object { $_ | Out-File -FilePath "$outputPackageDir\file_list.txt" -Append }
-
         Write-Output "`nExecutable (.exe) files:" | Out-File -FilePath "$outputPackageDir\file_list.txt" -Append
         $exeFiles | ForEach-Object { $_ | Out-File -FilePath "$outputPackageDir\file_list.txt" -Append }
-
         Write-Output "File list saved to $outputPackageDir\file_list.txt"
       shell: powershell
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: ${{ runner.workspace }}/DemoIccMAX/Package

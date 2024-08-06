@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: windows-latest
 
     steps:
     - name: Checkout repository
@@ -59,21 +59,21 @@ jobs:
     - name: Set VCPKG include and library paths
       run: |
         $env:VCPKG_INCLUDE = "${{ env.VCPKG_ROOT }}\installed\x64-windows\include"
-        $env:VCPKG_LIBRARY = "${{ env.VCPKG_ROOT }}\installed\x64-windows\lib"
+        $env:VCPKG_LIBRARY = "${{ env:VCPKG_ROOT }}\installed\x64-windows\lib"
       shell: powershell
 
     - name: Build IccProfLib
       run: |
         $msbuild = $env:MSBUILD_PATH
-        & $msbuild .\DemoIccMAX\IccProfLib\IccProfLib_v19.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${env:VCPKG_INCLUDE}" /p:LinkToolAdditionalOptions="/LIBPATH:${env:VCPKG_LIBRARY} /fsanitize=address"
+        & $msbuild .\DemoIccMAX\IccProfLib\IccProfLib_v19.vcxproj /m /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${env:VCPKG_INCLUDE}" /p:LinkToolAdditionalOptions="/LIBPATH:${env:VCPKG_LIBRARY} /fsanitize=address"
       shell: powershell
 
     - name: Build with MSBuild
       run: |
         $msbuild = $env:MSBUILD_PATH
-        & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${env:VCPKG_INCLUDE}" /p:LinkToolAdditionalOptions="/LIBPATH:${env:VCPKG_LIBRARY} /fsanitize=address"
-        & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${env:VCPKG_INCLUDE}" /p:LinkToolAdditionalOptions="/LIBPATH:${env:VCPKG_LIBRARY} /fsanitize=address"
-        & $msbuild .\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${env:VCPKG_INCLUDE}" /p:LinkToolAdditionalOptions="/LIBPATH:${env:VCPKG_LIBRARY} /fsanitize=address"
+        & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v19.sln /m /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${env:VCPKG_INCLUDE}" /p:LinkToolAdditionalOptions="/LIBPATH:${env:VCPKG_LIBRARY} /fsanitize=address"
+        & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /m /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${env:VCPKG_INCLUDE}" /p:LinkToolAdditionalOptions="/LIBPATH:${env:VCPKG_LIBRARY} /fsanitize=address"
+        & $msbuild .\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /m /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${env:VCPKG_INCLUDE}" /p:LinkToolAdditionalOptions="/LIBPATH:${env:VCPKG_LIBRARY} /fsanitize=address"
       shell: powershell
 
     - name: Identify and list output files

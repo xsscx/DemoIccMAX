@@ -34,13 +34,13 @@ jobs:
 
     - name: Setup vcpkg
       run: |
-        if (!(Test-Path -Path ${{ runner.workspace }}\vcpkg\vcpkg.exe)) {
+        $vcpkgRoot = "${{ runner.workspace }}\vcpkg"
+        if (!(Test-Path -Path "$vcpkgRoot\vcpkg.exe")) {
           git clone https://github.com/microsoft/vcpkg.git
           cd vcpkg
-          Invoke-WebRequest -Uri https://github.com/microsoft/vcpkg-tool/releases/download/2024-08-01/vcpkg.exe -OutFile ./vcpkg.exe
+          Invoke-WebRequest -Uri https://github.com/microsoft/vcpkg-tool/releases/download/2024-08-01/vcpkg.exe -OutFile .\vcpkg.exe
         }
-        $vcpkgRoot = "${{ runner.workspace }}\vcpkg"
-        $vcpkgRoot\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libjpeg-turbo:x64-windows libpng:x64-windows zlib:x64-windows pcre2:x64-windows expat:x64-windows
+        & "$vcpkgRoot\vcpkg.exe" install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libjpeg-turbo:x64-windows libpng:x64-windows zlib:x64-windows pcre2:x64-windows expat:x64-windows
         echo "VCPKG_ROOT=$vcpkgRoot" >> $env:GITHUB_ENV
         echo "VCPKG_INCLUDE=$vcpkgRoot\installed\x64-windows\include" >> $env:GITHUB_ENV
         echo "VCPKG_LIBRARY=$vcpkgRoot\installed\x64-windows\lib" >> $env:GITHUB_ENV

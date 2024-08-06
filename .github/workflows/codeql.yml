@@ -165,13 +165,16 @@ jobs:
         foreach ($file in $allFiles) {
             Categorize-Files -filePath $file.FullName
         }
-        Write-Output "Library (.lib) files:" | Out-File -FilePath "$outputPackageDir\file_list.txt" -Append
-        $libFiles | ForEach-Object { $_ | Out-File -FilePath "$outputPackageDir\file_list.txt" -Append }
-        Write-Output "`nDLL (.dll) files:" | Out-File -FilePath "$outputPackageDir\file_list.txt" -Append
-        $dllFiles | ForEach-Object { $_ | Out-File -FilePath "$outputPackageDir\file_list.txt" -Append }
-        Write-Output "`nExecutable (.exe) files:" | Out-File -FilePath "$outputPackageDir\file_list.txt" -Append
-        $exeFiles | ForEach-Object { $_ | Out-File -FilePath "$outputPackageDir\file_list.txt" -Append }
-        Write-Output "File list saved to $outputPackageDir\file_list.txt"
+        Write-Output "Library (.lib) files:"
+        $libFiles | ForEach-Object { Write-Output $_ }
+        Write-Output "`nDLL (.dll) files:"
+        $dllFiles | ForEach-Object { Write-Output $_ }
+        Write-Output "`nExecutable (.exe) files:"
+        $exeFiles | ForEach-Object { Write-Output $_ }
+        $libFiles | ForEach-Object { Copy-Item -Path $_ -Destination $outputPackageDir }
+        $dllFiles | ForEach-Object { Copy-Item -Path $_ -Destination $outputPackageDir }
+        $exeFiles | ForEach-Object { Copy-Item -Path $_ -Destination $outputPackageDir }
+        Write-Output "Files copied to $outputPackageDir"
       shell: powershell
 
     - name: Upload build artifacts

@@ -157,11 +157,11 @@ jobs:
 
       - name: Compress and Upload build artifacts
         run: |
-          Compress-Archive -Path "$outputPackageDir\*" -DestinationPath "$outputPackageDir\build-artifacts.zip"
+          Compress-Archive -Path "$outputPackageDir\*" -DestinationPath "${{ runner.workspace }}\build-artifacts.zip"
         shell: powershell
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
-          path: ${{ runner.workspace }}/DemoIccMAX/Package/build-artifacts.zip
+          path: ${{ runner.workspace }}/build-artifacts.zip

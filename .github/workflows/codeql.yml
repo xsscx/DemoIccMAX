@@ -66,6 +66,7 @@ jobs:
       run: |
         $msbuild = $env:MSBUILD_PATH
         & $msbuild .\DemoIccMAX\IccProfLib\IccProfLib_v19.vcxproj /m /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
+        & $msbuild .\DemoIccMAX\IccXML\IccLibXML\IccLibXML_v19.vcxproj /m /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
       shell: powershell
 
     - name: Build with MSBuild

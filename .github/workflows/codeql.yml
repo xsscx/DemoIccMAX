@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
@@ -80,6 +80,8 @@ jobs:
           Write-Output "VCPKG_INCLUDE: $env:VCPKG_INCLUDE"
           Write-Output "VCPKG_LIBRARY: $env:VCPKG_LIBRARY"
           Write-Output "MSBUILD_PATH: $env:MSBUILD_PATH"
+          Get-ChildItem -Path $env:VCPKG_INCLUDE -Recurse
+          Get-ChildItem -Path $env:VCPKG_LIBRARY -Recurse
         shell: powershell
 
       - name: Build IccProfLib

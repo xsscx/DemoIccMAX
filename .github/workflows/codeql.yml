@@ -11,13 +11,11 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 1  # Shallow clone for faster checkout
 
       - name: Download vswhere
         run: |
@@ -38,7 +36,7 @@ jobs:
         run: |
           $vcpkgRoot = "${{ runner.workspace }}\vcpkg"
           if (!(Test-Path -Path "$vcpkgRoot\vcpkg.exe")) {
-            git clone --depth 1 https://github.com/microsoft/vcpkg.git "$vcpkgRoot"  # Shallow clone for faster setup
+            git clone https://github.com/microsoft/vcpkg.git "$vcpkgRoot"
             Invoke-WebRequest -Uri https://github.com/microsoft/vcpkg-tool/releases/download/2024-08-01/vcpkg.exe -OutFile "$vcpkgRoot\vcpkg.exe"
           }
           if (!(Test-Path -Path "$vcpkgRoot\vcpkg.exe")) {
@@ -55,7 +53,7 @@ jobs:
 
       - name: Checkout DemoIccMAX repository
         run: |
-          git clone --depth 1 https://github.com/InternationalColorConsortium/DemoIccMAX.git  # Shallow clone for faster checkout
+          git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
           cd DemoIccMAX
           git config user.email "you@example.com"
           git config user.name "Your Name"
@@ -89,16 +87,16 @@ jobs:
       - name: Build IccProfLib
         run: |
           $msbuild = $env:MSBUILD_PATH
-          & $msbuild .\DemoIccMAX\IccProfLib\IccProfLib_v19.vcxproj /m /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
-          & $msbuild .\DemoIccMAX\IccXML\IccLibXML\IccLibXML_v19.vcxproj /m /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
+          & $msbuild .\DemoIccMAX\IccProfLib\IccProfLib_v19.vcxproj /m:$(nproc) /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
+          & $msbuild .\DemoIccMAX\IccXML\IccLibXML\IccLibXML_v19.vcxproj /m:$(nproc) /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
         shell: powershell
 
       - name: Build with MSBuild
         run: |
           $msbuild = $env:MSBUILD_PATH
-          & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v19.sln /m /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
-          & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /m /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
-          & $msbuild .\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /m /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
+          & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v19.sln /m:$(nproc) /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
+          & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /m:$(nproc) /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
+          & $msbuild .\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /m:$(nproc) /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
         shell: powershell
 
       - name: Identify and list output files

@@ -84,19 +84,21 @@ jobs:
           Get-ChildItem -Path $env:VCPKG_LIBRARY -Recurse
         shell: powershell
 
-      - name: Build IccProfLib
+      - name: Build IccProfLib and IccXmlLib
         run: |
           $msbuild = $env:MSBUILD_PATH
-          & $msbuild .\DemoIccMAX\IccProfLib\IccProfLib_v19.vcxproj /m:$(nproc) /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
-          & $msbuild .\DemoIccMAX\IccXML\IccLibXML\IccLibXML_v19.vcxproj /m:$(nproc) /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
+          $cpuCount = [Environment]::ProcessorCount
+          & $msbuild .\DemoIccMAX\IccProfLib\IccProfLib_v19.vcxproj /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
+          & $msbuild .\DemoIccMAX\IccXML\IccLibXML\IccLibXML_v19.vcxproj /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
         shell: powershell
 
       - name: Build with MSBuild
         run: |
           $msbuild = $env:MSBUILD_PATH
-          & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v19.sln /m:$(nproc) /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
-          & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /m:$(nproc) /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
-          & $msbuild .\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /m:$(nproc) /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
+          $cpuCount = [Environment]::ProcessorCount
+          & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v19.sln /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
+          & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
+          & $msbuild .\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
         shell: powershell
 
       - name: Identify and list output files

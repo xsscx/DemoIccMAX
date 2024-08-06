@@ -24,10 +24,6 @@ jobs:
           echo "VSWHERE_PATH=$vswherePath" >> $env:GITHUB_ENV
         shell: powershell
 
-      - name: Check tar version
-        run: tar --version
-        shell: powershell
-
       - name: Cache vcpkg
         uses: actions/cache@v4  # Updated to the latest version
         with:
@@ -48,6 +44,39 @@ jobs:
           echo "VCPKG_ROOT=$vcpkgRoot" >> $env:GITHUB_ENV
           echo "VCPKG_INCLUDE=$vcpkgRoot\installed\x64-windows\include" >> $env:GITHUB_ENV
           echo "VCPKG_LIBRARY=$vcpkgRoot\installed\x64-windows\lib" >> $env:GITHUB_ENV
+        shell: powershell
+
+      - name: Create symbolic links for missing libraries
+        run: |
+          Write-Output "Creating symbolic links for missing libraries..."
+          $installedLibDir = Join-Path $env:GITHUB_WORKSPACE "vcpkg\installed\x64-windows\lib"
+          $packagesDir = Join-Path $env:GITHUB_WORKSPACE "vcpkg\packages"
+          $libMapping = @{
+              "wxjpegd.lib" = "libjpeg-turbo_x64-windows\lib\jpeg.lib"
+              "wxpngd.lib" = "libpng_x64-windows\lib\libpng16.lib"
+              "wxzlibd.lib" = "zlib_x64-windows\lib\zlib.lib"
+              "wxregexd.lib" = "pcre2_x64-windows\lib\pcre2-8.lib"
+              "wxexpatd.lib" = "expat_x64-windows\lib\libexpat.lib"
+          }
+
+          function Create-Symlink {
+              param (
+                  [string]$linkName,
+                  [string]$targetPath
+              )
+              $linkPath = Join-Path $installedLibDir $linkName
+              $targetFullPath = Join-Path $packagesDir $targetPath
+              if (Test-Path $targetFullPath) {
+                  if (Test-Path $linkPath) {
+                      Remove-Item $linkPath
+                  }
+                  New-Item -ItemType SymbolicLink -Path $linkPath -Target $targetFullPath
+              }
+          }
+
+          foreach ($lib in $libMapping.GetEnumerator()) {
+              Create-Symlink -linkName $lib.Key -targetPath $lib.Value
+          }
         shell: powershell
 
       - name: Checkout DemoIccMAX repository

@@ -24,13 +24,26 @@ jobs:
         echo "VSWHERE_PATH=$vswherePath" >> $env:GITHUB_ENV
       shell: powershell
 
+    - name: Cache vcpkg
+      uses: actions/cache@v3
+      with:
+        path: ${{ runner.workspace }}/vcpkg
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+        restore-keys: |
+          ${{ runner.os }}-vcpkg-
+
     - name: Setup vcpkg
       run: |
-        git clone https://github.com/microsoft/vcpkg.git
-        cd vcpkg
-        Invoke-WebRequest -Uri https://github.com/microsoft/vcpkg-tool/releases/download/2024-08-01/vcpkg.exe -OutFile ./vcpkg.exe
-        ./vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libjpeg-turbo:x64-windows libpng:x64-windows zlib:x64-windows pcre2:x64-windows expat:x64-windows
-        echo "VCPKG_ROOT=${{ runner.workspace }}/vcpkg" >> $env:GITHUB_ENV
+        if (!(Test-Path -Path ${{ runner.workspace }}\vcpkg\vcpkg.exe)) {
+          git clone https://github.com/microsoft/vcpkg.git
+          cd vcpkg
+          Invoke-WebRequest -Uri https://github.com/microsoft/vcpkg-tool/releases/download/2024-08-01/vcpkg.exe -OutFile ./vcpkg.exe
+        }
+        $vcpkgRoot = "${{ runner.workspace }}\vcpkg"
+        $vcpkgRoot\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libjpeg-turbo:x64-windows libpng:x64-windows zlib:x64-windows pcre2:x64-windows expat:x64-windows
+        echo "VCPKG_ROOT=$vcpkgRoot" >> $env:GITHUB_ENV
+        echo "VCPKG_INCLUDE=$vcpkgRoot\installed\x64-windows\include" >> $env:GITHUB_ENV
+        echo "VCPKG_LIBRARY=$vcpkgRoot\installed\x64-windows\lib" >> $env:GITHUB_ENV
       shell: powershell
 
     - name: Checkout DemoIccMAX repository
@@ -56,10 +69,12 @@ jobs:
         }
       shell: powershell
 
-    - name: Set VCPKG include and library paths
+    - name: Print environment variables
       run: |
-        echo "VCPKG_INCLUDE=${{ env.VCPKG_ROOT }}\installed\x64-windows\include" >> $env:GITHUB_ENV
-        echo "VCPKG_LIBRARY=${{ env.VCPKG_ROOT }}\installed\x64-windows\lib" >> $env:GITHUB_ENV
+        Write-Output "VCPKG_ROOT: $env:VCPKG_ROOT"
+        Write-Output "VCPKG_INCLUDE: $env:VCPKG_INCLUDE"
+        Write-Output "VCPKG_LIBRARY: $env:VCPKG_LIBRARY"
+        Write-Output "MSBUILD_PATH: $env:MSBUILD_PATH"
       shell: powershell
 
     - name: Build IccProfLib

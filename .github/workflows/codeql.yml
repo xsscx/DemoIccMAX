@@ -25,7 +25,7 @@ jobs:
         shell: powershell
 
       - name: Cache vcpkg
-        uses: actions/cache@v4  # Updated to the latest version
+        uses: actions/cache@v4
         with:
           path: ${{ runner.workspace }}/vcpkg
           key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
@@ -57,6 +57,8 @@ jobs:
               "wxzlibd.lib" = "zlib_x64-windows\lib\zlib.lib"
               "wxregexd.lib" = "pcre2_x64-windows\lib\pcre2-8.lib"
               "wxexpatd.lib" = "expat_x64-windows\lib\libexpat.lib"
+              "libtiff.lib" = "tiff_x64-windows\lib\tiff.lib"
+              "wxmsw30d_core.lib" = "wxwidgets_x64-windows\lib\wxmsw32u_core.lib"  # Creating symlink for the required wxWidgets core library
           }
 
           function Create-Symlink {
@@ -116,8 +118,10 @@ jobs:
           $msbuild = $env:MSBUILD_PATH
           $cpuCount = [Environment]::ProcessorCount
           $libxml2IncludePath = "${{ env.VCPKG_INCLUDE }}\libxml2"
-          & $msbuild .\DemoIccMAX\IccProfLib\IccProfLib_v19.vcxproj /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /verbosity:diagnostic /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }} /I$libxml2IncludePath" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
-          & $msbuild .\DemoIccMAX\IccXML\IccLibXML\IccLibXML_v19.vcxproj /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /verbosity:diagnostic /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }} /I$libxml2IncludePath" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
+          $tiffIncludePath = Join-Path $env:GITHUB_WORKSPACE "vcpkg\packages\tiff_x64-windows\include"
+          $wxwidgetsIncludePath = Join-Path $env:GITHUB_WORKSPACE "vcpkg\packages\wxwidgets_x64-windows\lib"
+          & $msbuild .\DemoIccMAX\IccProfLib\IccProfLib_v19.vcxproj /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /verbosity:diagnostic /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }} /I$libxml2IncludePath /I$tiffIncludePath /I$wxwidgetsIncludePath" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
+          & $msbuild .\DemoIccMAX\IccXML\IccLibXML\IccLibXML_v19.vcxproj /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /verbosity:diagnostic /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }} /I$libxml2IncludePath /I$tiffIncludePath /I$wxwidgetsIncludePath" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
         shell: powershell
 
       - name: Build with MSBuild
@@ -125,9 +129,11 @@ jobs:
           $msbuild = $env:MSBUILD_PATH
           $cpuCount = [Environment]::ProcessorCount
           $libxml2IncludePath = "${{ env.VCPKG_INCLUDE }}\libxml2"
-          & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v19.sln /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /verbosity:diagnostic /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }} /I$libxml2IncludePath" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
-          & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /verbosity:diagnostic /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }} /I$libxml2IncludePath" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
-          & $msbuild .\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /verbosity:diagnostic /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }} /I$libxml2IncludePath" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
+          $tiffIncludePath = Join-Path $env:GITHUB_WORKSPACE "vcpkg\packages\tiff_x64-windows\include"
+          $wxwidgetsIncludePath = Join-Path $env:GITHUB_WORKSPACE "vcpkg\packages\wxwidgets_x64-windows\lib"
+          & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v19.sln /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /verbosity:diagnostic /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }} /I$libxml2IncludePath /I$tiffIncludePath /I$wxwidgetsIncludePath" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
+          & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /verbosity:diagnostic /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }} /I$libxml2IncludePath /I$tiffIncludePath /I$wxwidgetsIncludePath" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
+          & $msbuild .\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /verbosity:diagnostic /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }} /I$libxml2IncludePath /I$tiffIncludePath /I$wxwidgetsIncludePath" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
         shell: powershell
 
       - name: Identify and list output files
@@ -166,7 +172,7 @@ jobs:
         shell: powershell
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4  # Updated to the latest version
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: ${{ runner.workspace }}/DemoIccMAX/Package

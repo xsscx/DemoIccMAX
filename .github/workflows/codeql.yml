@@ -94,7 +94,7 @@ jobs:
                 ".exe" { $global:exeFiles += $filePath }
             }
         }
-        $demoIccMaxDir = "${{ runner.workspace }}\DemoIccMAX"
+        $demoIccMaxDir = "${{ runner.workspace }}\DemoIccMAX\DemoIccMAX"
         $allFiles = Get-ChildItem -Path $demoIccMaxDir -Recurse -File
         foreach ($file in $allFiles) {
             Categorize-Files -filePath $file.FullName

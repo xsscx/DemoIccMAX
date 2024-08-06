@@ -99,44 +99,65 @@ jobs:
           & $msbuild .\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /m /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }}" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
         shell: powershell
 
-      - name: Identify and list output files
+      - name: Identify and copy critical files
         run: |
           $outputPackageDir = "${{ runner.workspace }}\DemoIccMAX\Package"
           New-Item -ItemType Directory -Path $outputPackageDir -Force
-          $libFiles = @()
-          $dllFiles = @()
-          $exeFiles = @()
-          function Categorize-Files {
-              param (
-                  [string]$filePath
-              )
-              $extension = [System.IO.Path]::GetExtension($filePath).ToLower()
-              switch ($extension) {
-                  ".lib" { $global:libFiles += $filePath }
-                  ".dll" { $global:dllFiles += $filePath }
-                  ".exe" { $global:exeFiles += $filePath }
-              }
+          $criticalFiles = @(
+            'DemoIccMAXCmm.dll',
+            'IccProfLib.lib',
+            'iccApplyNamedCmm.exe',
+            'iccApplyToLink_d.exe',
+            'iccFromXml_d.exe',
+            'iccTiffDump.exe',
+            'liblzma.dll',
+            'wxProfileDump.exe',
+            'DemoIccMAXCmm.lib',
+            'IccProfLib_CRTDLL.lib',
+            'iccApplyNamedCmm_d.exe',
+            'iccDumpProfile.exe',
+            'iccRoundTrip.exe',
+            'iccTiffDump_d.exe',
+            'libpng16.dll',
+            'wxProfileDump_d.exe',
+            'IccFromXml.exe',
+            'IccProfLib_DLL.dll',
+            'iccApplyProfiles.exe',
+            'iccDumpProfile_d.exe',
+            'iccRoundTrip_d.exe',
+            'iccToXml_d.exe',
+            'libxml2.dll',
+            'wxbase32u_vc_custom.dll',
+            'IccLibXML_CRTDLL.lib',
+            'IccProfLib_DLL.lib',
+            'iccApplyProfiles_d.exe',
+            'iccFromCube.exe',
+            'iccSpecSepToTiff.exe',
+            'iconv-2.dll',
+            'pcre2-16.dll',
+            'wxmsw32u_core_vc_custom.dll',
+            'IccLibXml.lib',
+            'IccToXml.exe',
+            'iccApplyToLink.exe',
+            'iccFromCube_d.exe',
+            'iccSpecSepToTiff_d.exe',
+            'jpeg62.dll',
+            'tiff.dll',
+            'zlib1.dll'
+          )
+          foreach ($file in $criticalFiles) {
+            $filePath = Get-ChildItem -Path "${{ runner.workspace }}" -Recurse -Filter $file | Select-Object -First 1
+            if ($filePath) {
+              Copy-Item -Path $filePath.FullName -Destination $outputPackageDir
+            } else {
+              Write-Warning "File not found: $file"
+            }
           }
-          $demoIccMaxDir = "${{ runner.workspace }}\DemoIccMAX\DemoIccMAX"
-          $allFiles = Get-ChildItem -Path $demoIccMaxDir -Recurse -File
-          foreach ($file in $allFiles) {
-              Categorize-Files -filePath $file.FullName
-          }
-          Write-Output "Library (.lib) files:"
-          $libFiles | ForEach-Object { Write-Output $_ }
-          Write-Output "`nDLL (.dll) files:"
-          $dllFiles | ForEach-Object { Write-Output $_ }
-          Write-Output "`nExecutable (.exe) files:"
-          $exeFiles | ForEach-Object { Write-Output $_ }
-          $libFiles | ForEach-Object { Copy-Item -Path $_ -Destination $outputPackageDir }
-          $dllFiles | ForEach-Object { Copy-Item -Path $_ -Destination $outputPackageDir }
-          $exeFiles | ForEach-Object { Copy-Item -Path $_ -Destination $outputPackageDir }
-          Write-Output "Files copied to $outputPackageDir"
         shell: powershell
 
       - name: Compress and Upload build artifacts
         run: |
-          Compress-Archive -Path $outputPackageDir\* -DestinationPath $outputPackageDir\build-artifacts.zip
+          Compress-Archive -Path "$outputPackageDir\*" -DestinationPath "$outputPackageDir\build-artifacts.zip"
         shell: powershell
 
       - name: Upload build artifacts

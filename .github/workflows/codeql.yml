@@ -36,9 +36,14 @@ jobs:
       run: |
         $vcpkgRoot = "${{ runner.workspace }}\vcpkg"
         if (!(Test-Path -Path "$vcpkgRoot\vcpkg.exe")) {
-          git clone https://github.com/microsoft/vcpkg.git
-          cd vcpkg
-          Invoke-WebRequest -Uri https://github.com/microsoft/vcpkg-tool/releases/download/2024-08-01/vcpkg.exe -OutFile .\vcpkg.exe
+          git clone https://github.com/microsoft/vcpkg.git "$vcpkgRoot"
+          Invoke-WebRequest -Uri https://github.com/microsoft/vcpkg-tool/releases/download/2024-08-01/vcpkg.exe -OutFile "$vcpkgRoot\vcpkg.exe"
+        }
+        if (!(Test-Path -Path "$vcpkgRoot\vcpkg.exe")) {
+          Write-Error "vcpkg.exe not found at $vcpkgRoot\vcpkg.exe"
+          exit 1
+        } else {
+          Write-Output "vcpkg.exe found at $vcpkgRoot\vcpkg.exe"
         }
         & "$vcpkgRoot\vcpkg.exe" install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libjpeg-turbo:x64-windows libpng:x64-windows zlib:x64-windows pcre2:x64-windows expat:x64-windows
         echo "VCPKG_ROOT=$vcpkgRoot" >> $env:GITHUB_ENV

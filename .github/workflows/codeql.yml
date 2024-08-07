@@ -90,21 +90,6 @@ jobs:
         & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyProfiles\iccApplyProfiles_v19.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${env:VCPKG_INCLUDE}" /p:LinkToolAdditionalOptions="/LIBPATH:${env:VCPKG_LIBRARY} /fsanitize=address"
       shell: powershell
 
-    - name: Identify and copy all .exe, .dll, and .lib files
-      run: |
-        $outputPackageDir = "${{ runner.workspace }}\DemoIccMAX\Package"
-        New-Item -ItemType Directory -Path $outputPackageDir -Force
-
-        $filePatterns = @("*.exe", "*.dll", "*.lib")
-        foreach ($pattern in $filePatterns) {
-          Get-ChildItem -Path "${{ runner.workspace }}\DemoIccMAX" -Recurse -Filter $pattern | ForEach-Object {
-            Copy-Item -Path $_.FullName -Destination $outputPackageDir
-          }
-        }
-
-        Write-Output "Files copied to $outputPackageDir"
-      shell: powershell
-
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:

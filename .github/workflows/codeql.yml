@@ -31,6 +31,19 @@ jobs:
         ./bootstrap-vcpkg.bat
         ./vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libjpeg-turbo:x64-windows libpng:x64-windows zlib:x64-windows pcre2:x64-windows expat:x64-windows
         echo "VCPKG_ROOT=${{ runner.workspace }}/vcpkg" >> $env:GITHUB_ENV
+        echo "VCPKG_ROOT=${{ runner.workspace }}/vcpkg" >> $env:GITHUB_ENV
+      shell: powershell
+
+    - name: Check for tiff.lib
+      run: |
+        $vcpkgRoot = "${{ env.VCPKG_ROOT }}"
+        $tiffLibPath = Join-Path -Path $vcpkgRoot -ChildPath "packages/tiff_x64-windows/lib/tiff.lib"
+        if (Test-Path $tiffLibPath) {
+          Write-Output "tiff.lib found at: $tiffLibPath"
+        } else {
+          Write-Output "tiff.lib not found. Please ensure it is installed correctly."
+          exit 1
+        }
       shell: powershell
 
     - name: Checkout DemoIccMAX repository
@@ -59,7 +72,7 @@ jobs:
     - name: Set VCPKG include and library paths
       run: |
         $env:VCPKG_INCLUDE = "${{ env.VCPKG_ROOT }}\installed\x64-windows\include"
-        $env:VCPKG_LIBRARY = "${{ env.VCPKG_ROOT }}\installed\x64-windows\lib"
+        $env:VCPKG_LIBRARY = "${{ env.VCPKG_ROOT }}\packages\tiff_x64-windows\lib"
       shell: powershell
 
     - name: Build IccProfLib
@@ -74,6 +87,7 @@ jobs:
         & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v19.sln /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${env:VCPKG_INCLUDE}" /p:LinkToolAdditionalOptions="/LIBPATH:${env:VCPKG_LIBRARY} /fsanitize=address"
         & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${env:VCPKG_INCLUDE}" /p:LinkToolAdditionalOptions="/LIBPATH:${env:VCPKG_LIBRARY} /fsanitize=address"
         & $msbuild .\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${env:VCPKG_INCLUDE}" /p:LinkToolAdditionalOptions="/LIBPATH:${env:VCPKG_LIBRARY} /fsanitize=address"
+        & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyProfiles\iccApplyProfiles_v19.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${env:VCPKG_INCLUDE}" /p:LinkToolAdditionalOptions="/LIBPATH:${env:VCPKG_LIBRARY} /fsanitize=address"
       shell: powershell
 
     - name: Identify and copy all .exe, .dll, and .lib files

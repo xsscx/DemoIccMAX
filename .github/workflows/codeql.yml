@@ -48,7 +48,7 @@ jobs:
 
       - name: Checkout PatchIccMAX repository
         run: |
-          $patchDir = "$env:GITHUB_WORKSPACE\patches"
+          $patchDir = "$env:GITHUB_WORKSPACE\contrib\Research"
           if (-not (Test-Path -Path $patchDir)) {
             New-Item -ItemType Directory -Path $patchDir
           }

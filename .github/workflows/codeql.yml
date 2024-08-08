@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout repository
@@ -55,8 +55,13 @@ jobs:
           cd $patchDir
           git clone https://github.com/xsscx/PatchIccMAX.git
           Copy-Item "$patchDir\PatchIccMAX\contrib\Research\vs2022-build-mods.patch" -Destination "$env:GITHUB_WORKSPACE\DemoIccMAX"
+        shell: powershell
+
+      - name: Apply Revert and Patch
+        run: |
           cd "$env:GITHUB_WORKSPACE\DemoIccMAX"
-          git apply vs2022-build-mods.patch
+          git revert --no-edit b90ac3933da99179df26351c39d8d9d706ac1cc6
+          git apply "$env:GITHUB_WORKSPACE\DemoIccMAX\vs2022-build-mods.patch"
         shell: powershell
 
       - name: Find MSBuild Path
@@ -96,9 +101,7 @@ jobs:
           $msbuild = $env:MSBUILD_PATH
           $cpuCount = [Environment]::ProcessorCount
           $libxml2IncludePath = "${{ env.VCPKG_INCLUDE }}\libxml2"
-          & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v19.sln /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }} /I$libxml2IncludePath" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
-          & $msbuild .\DemoIccMAX\Tools\CmdLine\IccApplyToLink\iccApplyToLink_v16.vcxproj /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }} /I$libxml2IncludePath" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
-          & $msbuild .\DemoIccMAX\Tools\CmdLine\IccFromCube\iccFromCube_v16.vcxproj /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }} /I$libxml2IncludePath" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
+          & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v22.sln /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }} /I$libxml2IncludePath" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
         shell: powershell
 
       - name: Identify and list output files

@@ -59,12 +59,15 @@ jobs:
         git apply contrib/Research/vs2022-build-mods.patch
       shell: pwsh
 
-    - name: Verify that the solution file exists
+    - name: Verify and display the directory contents
       run: |
         $solutionPath = "${{ github.workspace }}\builds\PatchIccMAX\Build\MSVC\BuildAll_v22.sln"
         if (!(Test-Path $solutionPath)) {
           Write-Error "Solution file does not exist: $solutionPath"
+          Get-ChildItem -Path "${{ github.workspace }}\builds\PatchIccMAX\Build\MSVC"
           exit 1
+        } else {
+          Write-Host "Solution file exists at: $solutionPath"
         }
       shell: pwsh
 

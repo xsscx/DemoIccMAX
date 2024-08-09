@@ -18,10 +18,16 @@ jobs:
 
     - name: Set up paths
       run: |
-        $baseDir = "C:\tmp\test\builds"
+        $baseDir = "C:\tmp\test\builds-101"
         $vcpkgDir = "$baseDir\vcpkg"
         $patchDir = "$baseDir\patch"
         New-Item -ItemType Directory -Path $baseDir -Force
+      shell: pwsh
+
+    - name: Configure Git for anonymous commits
+      run: |
+        git config --global user.email "anon@example.com"
+        git config --global user.name "Anonymous User"
       shell: pwsh
 
     - name: Clone and setup vcpkg
@@ -43,6 +49,15 @@ jobs:
         git apply contrib/Research/vs2022-build-mods.patch
       shell: pwsh
 
+    - name: Verify that the solution file exists
+      run: |
+        $solutionPath = "C:\tmp\test\builds\PatchIccMAX\Build\MSVC\BuildAll_v22.sln"
+        if (!(Test-Path $solutionPath)) {
+          Write-Error "Solution file does not exist: $solutionPath"
+          exit 1
+        }
+      shell: pwsh
+
     - name: Build the project
       run: |
         $msbuildPath = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
@@ -51,15 +66,19 @@ jobs:
       shell: pwsh
 
     - name: Search for .exe, .dll, and .lib files
+      id: search_files
       run: |
         $directory = "C:\tmp\test\builds\vcpkg\PatchIccMAX"
         $files = Get-ChildItem -Path $directory -Recurse -Include *.exe, *.dll, *.lib
-        $results = @()
+        $outputDir = "C:\tmp\test\output"
+        New-Item -ItemType Directory -Path $outputDir -Force
         foreach ($file in $files) {
-            $results += [PSCustomObject]@{
-                Path = $file.FullName
-                Type = $file.Extension
-            }
+            Copy-Item -Path $file.FullName -Destination $outputDir
         }
-        $results | Format-Table -AutoSize
       shell: pwsh
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: C:\tmp\test\output\*.*

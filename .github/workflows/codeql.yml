@@ -1,146 +1,65 @@
-name: Build and Apply Patch
+name: Build and Analyze DemoIccMAX
 
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
-  workflow_dispatch:
+      - main
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout the repository
+      uses: actions/checkout@v4
 
-      - name: Download vswhere
-        run: |
-          $vswherePath = "${{ runner.workspace }}\vswhere.exe"
-          Invoke-WebRequest -Uri https://github.com/microsoft/vswhere/releases/download/2.8.4/vswhere.exe -OutFile $vswherePath
-          echo "VSWHERE_PATH=$vswherePath" >> $env:GITHUB_ENV
-        shell: powershell
+    - name: Set up paths
+      run: |
+        $baseDir = "C:\tmp\test\builds"
+        $vcpkgDir = "$baseDir\vcpkg"
+        $patchDir = "$baseDir\patch"
+        New-Item -ItemType Directory -Path $baseDir -Force
+      shell: pwsh
 
-      - name: Cache vcpkg
-        uses: actions/cache@v4
-        with:
-          path: ${{ runner.workspace }}/vcpkg
-          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
-          restore-keys: |
-            ${{ runner.os }}-vcpkg-
-            
-      - name: Setup vcpkg
-        run: |
-          $vcpkgRoot = "${{ runner.workspace }}\vcpkg"
-          if (!(Test-Path -Path "$vcpkgRoot\vcpkg.exe")) {
-            git clone https://github.com/microsoft/vcpkg.git "$vcpkgRoot"
-            Invoke-WebRequest -Uri https://github.com/microsoft/vcpkg-tool/releases/download/2024-08-01/vcpkg.exe -OutFile "$vcpkgRoot\vcpkg.exe"
-          }
-          & "$vcpkgRoot\vcpkg.exe" integrate install
-          & "$vcpkgRoot\vcpkg.exe" install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libjpeg-turbo:x64-windows libpng:x64-windows zlib:x64-windows pcre2:x64-windows expat:x64-windows
-          echo "VCPKG_ROOT=$vcpkgRoot" >> $env:GITHUB_ENV
-          echo "VCPKG_INCLUDE=$vcpkgRoot\installed\x64-windows\include" >> $env:GITHUB_ENV
-          echo "VCPKG_LIBRARY=$vcpkgRoot\installed\x64-windows\lib" >> $env:GITHUB_ENV
-        shell: powershell
+    - name: Clone and setup vcpkg
+      run: |
+        cd C:\tmp\test\builds
+        git clone https://github.com/microsoft/vcpkg.git
+        cd vcpkg
+        .\bootstrap-vcpkg.bat
+        .\vcpkg.exe integrate install
+        .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
+      shell: pwsh
 
-      - name: Checkout PatchIccMAX repository
-        run: |
-          $patchDir = "$env:GITHUB_WORKSPACE\contrib\Research"
-          if (-not (Test-Path -Path $patchDir)) {
-            New-Item -ItemType Directory -Path $patchDir
-          }
-          cd $patchDir
-          git clone https://github.com/xsscx/PatchIccMAX.git
-          Copy-Item "$patchDir\PatchIccMAX\contrib\Research\vs2022-build-mods.patch" -Destination "$env:GITHUB_WORKSPACE\DemoIccMAX"
-        shell: powershell
+    - name: Clone DemoIccMAX repository and apply patch
+      run: |
+        cd C:\tmp\test\builds
+        git clone https://github.com/xsscx/PatchIccMAX.git
+        cd PatchIccMAX
+        git revert --no-edit b90ac3933da99179df26351c39d8d9d706ac1cc6
+        git apply contrib/Research/vs2022-build-mods.patch
+      shell: pwsh
 
-      - name: Apply Revert and Patch
-        run: |
-          cd "$env:GITHUB_WORKSPACE\DemoIccMAX"
-          git revert --no-edit b90ac3933da99179df26351c39d8d9d706ac1cc6
-          git apply "$env:GITHUB_WORKSPACE\DemoIccMAX\vs2022-build-mods.patch"
-        shell: powershell
+    - name: Build the project
+      run: |
+        $msbuildPath = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+        $vcpkgDir = "C:\tmp\test\builds\vcpkg"
+        & $msbuildPath /m /maxcpucount .\Build\MSVC\BuildAll_v22.sln /p:Configuration=Debug /p:Platform=x64 /p:AdditionalIncludeDirectories="$vcpkgDir\installed\x64-windows\include" /p:AdditionalLibraryDirectories="$vcpkgDir\installed\x64-windows\lib" /p:CLToolAdditionalOptions="/fsanitize=address /Zi /Od /DDEBUG /W4" /p:LinkToolAdditionalOptions="/fsanitize=address /DEBUG /INCREMENTAL:NO"
+      shell: pwsh
 
-      - name: Find MSBuild Path
-        id: msbuild
-        run: |
-          $msbuildPath = &"${{ env.VSWHERE_PATH }}" -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
-          echo "MSBUILD_PATH=$msbuildPath" >> $env:GITHUB_ENV
-        shell: powershell
-
-      - name: Update platform toolset to v143
-        run: |
-          Get-ChildItem -Recurse -Filter *.vcxproj | ForEach-Object {
-            (Get-Content $_.FullName) -replace '<PlatformToolset>v142</PlatformToolset>', '<PlatformToolset>v143</PlatformToolset>' | Set-Content $_.FullName
-          }
-        shell: powershell
-
-      - name: Print environment variables
-        run: |
-          Write-Output "VCPKG_ROOT: $env:VCPKG_ROOT"
-          Write-Output "VCPKG_INCLUDE: $env:VCPKG_INCLUDE"
-          Write-Output "VCPKG_LIBRARY: $env:VCPKG_LIBRARY"
-          Get-ChildItem -Path $env:VCPKG_INCLUDE -Recurse
-          Get-ChildItem -Path $env:VCPKG_LIBRARY -Recurse
-        shell: powershell
-
-      - name: Build IccProfLib and IccXmlLib
-        run: |
-          $msbuild = $env:MSBUILD_PATH
-          $cpuCount = [Environment]::ProcessorCount
-          $libxml2IncludePath = "${{ env.VCPKG_INCLUDE }}\libxml2"
-          & $msbuild .\DemoIccMAX\IccProfLib\IccProfLib_v19.vcxproj /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }} /I$libxml2IncludePath" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
-          & $msbuild .\DemoIccMAX\IccXML\IccLibXML\IccLibXML_v19.vcxproj /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }} /I$libxml2IncludePath" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
-        shell: powershell
-
-      - name: Build with MSBuild
-        run: |
-          $msbuild = $env:MSBUILD_PATH
-          $cpuCount = [Environment]::ProcessorCount
-          $libxml2IncludePath = "${{ env.VCPKG_INCLUDE }}\libxml2"
-          & $msbuild .\DemoIccMAX\Build\MSVC\BuildAll_v22.sln /m:$cpuCount /p:Configuration=Debug /p:Platform=x64 /p:CLToolAdditionalOptions="/I${{ env.VCPKG_INCLUDE }} /I$libxml2IncludePath" /p:LinkToolAdditionalOptions="/LIBPATH:${{ env.VCPKG_LIBRARY }} /fsanitize=address"
-        shell: powershell
-
-      - name: Identify and list output files
-        run: |
-          $outputPackageDir = "${{ runner.workspace }}\DemoIccMAX\Package"
-          New-Item -ItemType Directory -Path $outputPackageDir -Force
-          $libFiles = @()
-          $dllFiles = @()
-          $exeFiles = @()
-          function Categorize-Files {
-              param (
-                  [string]$filePath
-              )
-              $extension = [System.IO.Path]::GetExtension($filePath).ToLower()
-              switch ($extension) {
-                  ".lib" { $global:libFiles += $filePath }
-                  ".dll" { $global:dllFiles += $filePath }
-                  ".exe" { $global:exeFiles += $filePath }
-              }
-          }
-          $demoIccMaxDir = "${{ runner.workspace }}\DemoIccMAX\DemoIccMAX"
-          $allFiles = Get-ChildItem -Path $demoIccMaxDir -Recurse -File
-          foreach ($file in $allFiles) {
-              Categorize-Files -filePath $file.FullName
-          }
-          Write-Output "Library (.lib) files:"
-          $libFiles | ForEach-Object { Write-Output $_ }
-          Write-Output "`nDLL (.dll) files:"
-          $dllFiles | ForEach-Object { Write-Output $_ }
-          Write-Output "`nExecutable (.exe) files:"
-          $exeFiles | ForEach-Object { Write-Output $_ }
-          $libFiles | ForEach-Object { Copy-Item -Path $_ -Destination $outputPackageDir }
-          $dllFiles | ForEach-Object { Copy-Item -Path $_ -Destination $outputPackageDir }
-          $exeFiles | ForEach-Object { Copy-Item -Path $_ -Destination $outputPackageDir }
-          Write-Output "Files copied to $outputPackageDir"
-        shell: powershell
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: ${{ runner.workspace }}/DemoIccMAX/Package
+    - name: Search for .exe, .dll, and .lib files
+      run: |
+        $directory = "C:\tmp\test\builds\vcpkg\PatchIccMAX"
+        $files = Get-ChildItem -Path $directory -Recurse -Include *.exe, *.dll, *.lib
+        $results = @()
+        foreach ($file in $files) {
+            $results += [PSCustomObject]@{
+                Path = $file.FullName
+                Type = $file.Extension
+            }
+        }
+        $results | Format-Table -AutoSize
+      shell: pwsh

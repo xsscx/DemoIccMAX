@@ -24,24 +24,24 @@ jobs:
 
     - name: Set up paths
       run: |
-        $baseDir = "${{ github.workspace }}\builds"
+        $baseDir = "${{ github.workspace }}\builds-109"
         $vcpkgDir = "$baseDir\vcpkg"
         $patchDir = "$baseDir\patch"
         New-Item -ItemType Directory -Path $baseDir -Force
       shell: pwsh
 
     - name: Cache vcpkg
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
-        path: ${{ github.workspace }}\builds\vcpkg
+        path: ${{ github.workspace }}\builds-109\vcpkg
         key: ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json') }}
         restore-keys: |
           ${{ runner.os }}-vcpkg-
 
     - name: Clone and setup vcpkg
       run: |
-        cd ${{ github.workspace }}\builds
-        if (-not (Test-Path "${{ github.workspace }}\builds\vcpkg")) {
+        cd ${{ github.workspace }}\builds-109
+        if (-not (Test-Path "${{ github.workspace }}\builds-109\vcpkg")) {
           git clone https://github.com/microsoft/vcpkg.git
           cd vcpkg
           .\bootstrap-vcpkg.bat
@@ -52,7 +52,7 @@ jobs:
 
     - name: Clone DemoIccMAX repository and apply patch
       run: |
-        cd ${{ github.workspace }}\builds
+        cd ${{ github.workspace }}\builds-109
         git clone https://github.com/xsscx/PatchIccMAX.git
         cd PatchIccMAX
         git revert --no-edit b90ac3933da99179df26351c39d8d9d706ac1cc6
@@ -61,10 +61,10 @@ jobs:
 
     - name: Verify and display the directory contents
       run: |
-        $solutionPath = "${{ github.workspace }}\builds\PatchIccMAX\Build\MSVC\BuildAll_v22.sln"
+        $solutionPath = "${{ github.workspace }}\builds-109\PatchIccMAX\Build\MSVC\BuildAll_v22.sln"
         if (!(Test-Path $solutionPath)) {
           Write-Error "Solution file does not exist: $solutionPath"
-          Get-ChildItem -Path "${{ github.workspace }}\builds\PatchIccMAX\Build\MSVC"
+          Get-ChildItem -Path "${{ github.workspace }}\builds-109\PatchIccMAX\Build\MSVC"
           exit 1
         } else {
           Write-Host "Solution file exists at: $solutionPath"
@@ -79,15 +79,15 @@ jobs:
     - name: Build the project
       run: |
         $msbuildPath = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
-        $vcpkgDir = "${{ github.workspace }}\builds\vcpkg"
-        cd ${{ github.workspace }}\builds\PatchIccMAX
+        $vcpkgDir = "${{ github.workspace }}\builds-109\vcpkg"
+        cd ${{ github.workspace }}\builds-109\PatchIccMAX
         & $msbuildPath /m /maxcpucount .\Build\MSVC\BuildAll_v22.sln /p:Configuration=Debug /p:Platform=x64 /p:AdditionalIncludeDirectories="$vcpkgDir\installed\x64-windows\include" /p:AdditionalLibraryDirectories="$vcpkgDir\installed\x64-windows\lib" /p:CLToolAdditionalOptions="/fsanitize=address /Zi /Od /DDEBUG /W4" /p:LinkToolAdditionalOptions="/fsanitize=address /DEBUG /INCREMENTAL:NO"
       shell: pwsh
 
     - name: Search for .exe, .dll, and .lib files
       id: search_files
       run: |
-        $directory = "${{ github.workspace }}\builds\PatchIccMAX"
+        $directory = "${{ github.workspace }}\builds-109\PatchIccMAX"
         $files = Get-ChildItem -Path $directory -Recurse -Include *.exe, *.dll, *.lib
         $outputDir = "${{ github.workspace }}\output"
         New-Item -ItemType Directory -Path $outputDir -Force
@@ -97,7 +97,7 @@ jobs:
       shell: pwsh
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: build-artifacts
         path: ${{ github.workspace }}\output\*.*

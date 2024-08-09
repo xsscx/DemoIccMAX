@@ -9,20 +9,12 @@ on:
       - main
 
 jobs:
-  build:
-    runs-on: windows-latest
+  setup_environment:
+    runs-on: self-hosted
 
     steps:
     - name: Checkout the repository
       uses: actions/checkout@v4
-
-    - name: Set up paths
-      run: |
-        $baseDir = "C:\tmp\test\builds-101"
-        $vcpkgDir = "$baseDir\vcpkg"
-        $patchDir = "$baseDir\patch"
-        New-Item -ItemType Directory -Path $baseDir -Force
-      shell: pwsh
 
     - name: Configure Git for anonymous commits
       run: |
@@ -30,19 +22,37 @@ jobs:
         git config --global user.name "Anonymous User"
       shell: pwsh
 
+    - name: Set up paths
+      run: |
+        $baseDir = "${{ github.workspace }}\builds"
+        $vcpkgDir = "$baseDir\vcpkg"
+        $patchDir = "$baseDir\patch"
+        New-Item -ItemType Directory -Path $baseDir -Force
+      shell: pwsh
+
+    - name: Cache vcpkg
+      uses: actions/cache@v3
+      with:
+        path: ${{ github.workspace }}\builds\vcpkg
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json') }}
+        restore-keys: |
+          ${{ runner.os }}-vcpkg-
+
     - name: Clone and setup vcpkg
       run: |
-        cd C:\tmp\test\builds-101
-        git clone https://github.com/microsoft/vcpkg.git
-        cd vcpkg
-        .\bootstrap-vcpkg.bat
-        .\vcpkg.exe integrate install
-        .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
+        cd ${{ github.workspace }}\builds
+        if (-not (Test-Path "${{ github.workspace }}\builds\vcpkg")) {
+          git clone https://github.com/microsoft/vcpkg.git
+          cd vcpkg
+          .\bootstrap-vcpkg.bat
+          .\vcpkg.exe integrate install
+          .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows
+        }
       shell: pwsh
 
     - name: Clone DemoIccMAX repository and apply patch
       run: |
-        cd C:\tmp\test\builds-101
+        cd ${{ github.workspace }}\builds
         git clone https://github.com/xsscx/PatchIccMAX.git
         cd PatchIccMAX
         git revert --no-edit b90ac3933da99179df26351c39d8d9d706ac1cc6
@@ -51,26 +61,32 @@ jobs:
 
     - name: Verify that the solution file exists
       run: |
-        $solutionPath = "C:\tmp\test\builds-101\PatchIccMAX\Build\MSVC\BuildAll_v22.sln"
+        $solutionPath = "${{ github.workspace }}\builds\PatchIccMAX\Build\MSVC\BuildAll_v22.sln"
         if (!(Test-Path $solutionPath)) {
           Write-Error "Solution file does not exist: $solutionPath"
           exit 1
         }
       shell: pwsh
 
+  build:
+    runs-on: self-hosted
+    needs: setup_environment
+
+    steps:
     - name: Build the project
       run: |
         $msbuildPath = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
-        $vcpkgDir = "C:\tmp\test\builds-101\vcpkg"
+        $vcpkgDir = "${{ github.workspace }}\builds\vcpkg"
+        cd ${{ github.workspace }}\builds\PatchIccMAX
         & $msbuildPath /m /maxcpucount .\Build\MSVC\BuildAll_v22.sln /p:Configuration=Debug /p:Platform=x64 /p:AdditionalIncludeDirectories="$vcpkgDir\installed\x64-windows\include" /p:AdditionalLibraryDirectories="$vcpkgDir\installed\x64-windows\lib" /p:CLToolAdditionalOptions="/fsanitize=address /Zi /Od /DDEBUG /W4" /p:LinkToolAdditionalOptions="/fsanitize=address /DEBUG /INCREMENTAL:NO"
       shell: pwsh
 
     - name: Search for .exe, .dll, and .lib files
       id: search_files
       run: |
-        $directory = "C:\tmp\test\builds-101\vcpkg\PatchIccMAX"
+        $directory = "${{ github.workspace }}\builds\PatchIccMAX"
         $files = Get-ChildItem -Path $directory -Recurse -Include *.exe, *.dll, *.lib
-        $outputDir = "C:\tmp\test\output"
+        $outputDir = "${{ github.workspace }}\output"
         New-Item -ItemType Directory -Path $outputDir -Force
         foreach ($file in $files) {
             Copy-Item -Path $file.FullName -Destination $outputDir
@@ -81,4 +97,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: build-artifacts
-        path: C:\tmp\test\output\*.*
+        path: ${{ github.workspace }}\output\*.*

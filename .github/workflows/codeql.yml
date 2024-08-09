@@ -32,7 +32,7 @@ jobs:
 
     - name: Clone and setup vcpkg
       run: |
-        cd C:\tmp\test\builds
+        cd C:\tmp\test\builds-101
         git clone https://github.com/microsoft/vcpkg.git
         cd vcpkg
         .\bootstrap-vcpkg.bat
@@ -42,7 +42,7 @@ jobs:
 
     - name: Clone DemoIccMAX repository and apply patch
       run: |
-        cd C:\tmp\test\builds
+        cd C:\tmp\test\builds-101
         git clone https://github.com/xsscx/PatchIccMAX.git
         cd PatchIccMAX
         git revert --no-edit b90ac3933da99179df26351c39d8d9d706ac1cc6
@@ -51,7 +51,7 @@ jobs:
 
     - name: Verify that the solution file exists
       run: |
-        $solutionPath = "C:\tmp\test\builds\PatchIccMAX\Build\MSVC\BuildAll_v22.sln"
+        $solutionPath = "C:\tmp\test\builds-101\PatchIccMAX\Build\MSVC\BuildAll_v22.sln"
         if (!(Test-Path $solutionPath)) {
           Write-Error "Solution file does not exist: $solutionPath"
           exit 1
@@ -61,14 +61,14 @@ jobs:
     - name: Build the project
       run: |
         $msbuildPath = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
-        $vcpkgDir = "C:\tmp\test\builds\vcpkg"
+        $vcpkgDir = "C:\tmp\test\builds-101\vcpkg"
         & $msbuildPath /m /maxcpucount .\Build\MSVC\BuildAll_v22.sln /p:Configuration=Debug /p:Platform=x64 /p:AdditionalIncludeDirectories="$vcpkgDir\installed\x64-windows\include" /p:AdditionalLibraryDirectories="$vcpkgDir\installed\x64-windows\lib" /p:CLToolAdditionalOptions="/fsanitize=address /Zi /Od /DDEBUG /W4" /p:LinkToolAdditionalOptions="/fsanitize=address /DEBUG /INCREMENTAL:NO"
       shell: pwsh
 
     - name: Search for .exe, .dll, and .lib files
       id: search_files
       run: |
-        $directory = "C:\tmp\test\builds\vcpkg\PatchIccMAX"
+        $directory = "C:\tmp\test\builds-101\vcpkg\PatchIccMAX"
         $files = Get-ChildItem -Path $directory -Recurse -Include *.exe, *.dll, *.lib
         $outputDir = "C:\tmp\test\output"
         New-Item -ItemType Directory -Path $outputDir -Force

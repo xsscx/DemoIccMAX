@@ -1,0 +1,144 @@
+###############################################################
+#
+## Copyright (©) 2024 David H Hoyt. All rights reserved.
+##                 https://srd.cx
+##
+## Last Updated: 10-DEC-2024 by David Hoyt (©)
+#
+## Intent: Poll the Device and Report
+#
+## TODO: Refactor for all Windows & UNIX Device Reporting
+#
+#
+###############################################################
+
+name: MSVC Branch
+
+on:
+  push:
+    branches: [ "development" ]
+  pull_request:
+    branches: [ "development" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      BuildConfiguration: Debug
+      BUILD_DIR: ${{ github.workspace }}/builds  # Ensure 'builds' directory exists
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Cache vcpkg dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ runner.temp }}/vcpkg
+          ${{ runner.temp }}/vcpkg/downloads
+        key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}  # Cache based on vcpkg.json, or manual key
+        restore-keys: |
+          vcpkg-${{ runner.os }}-
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
+
+    - name: Setup vcpkg and install dependencies
+      run: |
+        $buildDir = "${{ env.BUILD_DIR }}"
+        $vcpkgDir = "$RUNNER_TEMP/vcpkg"
+        $outputDir = "$RUNNER_TEMP/output"
+        # Create necessary directories
+        New-Item -ItemType Directory -Path $buildDir -Force
+        New-Item -ItemType Directory -Path $outputDir -Force
+        # Check if vcpkg is cached or needs to be installed
+        if (-not (Test-Path "$vcpkgDir\installed")) {
+            # Clone and setup vcpkg if it's not cached
+            git clone https://github.com/microsoft/vcpkg.git $vcpkgDir
+            cd $vcpkgDir
+            .\bootstrap-vcpkg.bat
+        } else {
+            Write-Host "vcpkg is cached and already installed."
+        }
+        # Install required libraries using vcpkg, and ensure only necessary libraries are installed
+        .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows --clean-after-build --recurse --debug
+        Write-Host "vcpkg libraries installed successfully"
+    
+    - name: Clone PatchIccMAX repository
+      run: |
+        $buildDir = "${{ env.BUILD_DIR }}"
+        cd $buildDir
+        if (-not (Test-Path "$buildDir\PatchIccMAX")) {
+            git clone https://github.com/xsscx/PatchIccMAX.git PatchIccMAX  # Ensure it's placed in 'PatchIccMAX' folder
+        }
+        cd "$buildDir\PatchIccMAX"
+        git checkout msvc
+        Write-Host "DemoIccMAX repository checked out to development branch."
+        # Verify directory structure
+        if (-not (Test-Path "$buildDir\PatchIccMAX\Build\MSVC")) {
+          Write-Error "Directory structure is not as expected: $buildDir\PatchIccMAX\Build\MSVC"
+          Get-ChildItem -Path $buildDir\PatchIccMAX
+          exit 1
+        }
+
+    - name: Find MSBuild Path using vswhere
+      id: msbuild-locate
+      run: |
+        $vswherePath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+        $msbuildPath = & $vswherePath -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+        if (-not $msbuildPath) {
+          Write-Error "MSBuild.exe not found"
+          exit 1
+        } else {
+          Write-Host "MSBuild found at: $msbuildPath"
+        }
+        echo "::set-output name=msbuild-path::$msbuildPath"
+
+    - name: Verify solution file and build the project
+      run: |
+        $solutionPath = "${{ env.BUILD_DIR }}\PatchIccMAX\Build\MSVC\BuildAll_v22.sln"
+        if (!(Test-Path $solutionPath)) {
+            Write-Error "Solution file does not exist: $solutionPath"
+            Get-ChildItem -Path "${{ env.BUILD_DIR }}\PatchIccMAX\Build\MSVC"
+            exit 1
+        } else {
+            Write-Host "Solution file exists at: $solutionPath"
+        }
+        # Build the project using the dynamically located MSBuild
+        $msbuildPath = "${{ steps.msbuild-locate.outputs['msbuild-path'] }}"
+        $buildDir = "${{ env.BUILD_DIR }}\PatchIccMAX"
+        cd $buildDir
+        & $msbuildPath .\Build\MSVC\BuildAll_v22.sln `
+            /m `
+            /p:Configuration=Debug `
+            /p:Platform=x64 `
+            /p:AdditionalIncludeDirectories="$RUNNER_TEMP/vcpkg/installed/x64-windows/include" `
+            /p:AdditionalLibraryDirectories="$RUNNER_TEMP/vcpkg/installed/x64-windows/lib" `
+            /p:CLToolAdditionalOptions="/fsanitize=address /Zi /Od /DDEBUG /W4" `
+            /p:LinkToolAdditionalOptions="/fsanitize=address /DEBUG /INCREMENTAL:NO"
+
+    - name: Copy build artifacts to output directory
+      run: |
+        $directory = "${{ env.BUILD_DIR }}\PatchIccMAX"
+        $outputDir = "$RUNNER_TEMP/output"
+        $files = Get-ChildItem -Path $directory -Recurse -Include *.exe, *.dll, *.lib
+        foreach ($file in $files) {
+            Copy-Item -Path $file.FullName -Destination $outputDir
+        }
+        # Print the path for validation
+        Write-Host "Artifacts copied to output directory: $outputDir"
+
+    - name: List files in the output directory
+      run: |
+        Write-Host "Listing files in the output directory:"
+        Get-ChildItem -Path "$RUNNER_TEMP/output"
+    
+    # Upload build artifacts with full path expansion
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: PatchIccMAX-Build-Artifacts
+        path: ${{ env.BUILD_DIR }}\..\output

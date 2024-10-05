@@ -1,0 +1,164 @@
+###############################################################
+#
+## Copyright (©) 2024 David H Hoyt. All rights reserved.
+##                 https://srd.cx
+##
+## Last Updated: 10-DEC-2024 by David Hoyt (©)
+#
+## Intent: Poll the Device and Report
+#
+## TODO: Refactor for all Windows & UNIX Device Reporting
+#
+#
+###############################################################
+
+name: "Master Revert Scanbuild"
+
+on:
+  workflow_dispatch:    # Allows manual triggering from the Actions tab in GitHub
+  push:                 # Automatically triggers on push events to the master branch
+    branches:
+      - master
+
+jobs:
+  # Ubuntu Build and Test Job
+  revert_commit_and_build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set up Git anonymous identity
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "GitHub Actions"
+    - name: Remove existing DemoIccMAX directory (if it exists)
+      run: |
+        if [ -d "DemoIccMAX" ]; then
+          rm -rf DemoIccMAX
+        fi
+    - name: Checkout Code
+      run: |
+        git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
+        cd DemoIccMAX
+    # Install Dependencies
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update  
+        # Check and install if packages are not installed
+            sudo apt-get install -y wx-common wxwidgets libtiff6 curl git make cmake clang clang-tools libxml2 libxml2-dev nlohmann-json3-dev build-essential
+    - name: Attempt Revert
+      run: |
+        cd DemoIccMAX
+    # Configure the build with CMake using scan-build
+    - name: Configure the build with CMake using scan-build
+      run: |
+        cd DemoIccMAX/Build/
+        
+        scan-build --html-title="Static Analysis Report" -o scanbuild-output cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \
+              -Wno-dev Cmake/
+    # Check for build errors with scan-build
+    - name: Check for build errors with scan-build
+      run: |
+        set -euxo pipefail  # Enable safer shell scripting
+        cd DemoIccMAX/Build/
+        export CXX=clang++
+        scan-build --html-title="Static Analysis Report" -o scanbuild-output make
+    # Create artifact directory for binaries
+    - name: Create artifact directory
+      run: mkdir -p artifact
+
+    # Find and copy binary tools, libraries, and archive files (Linux x86_64)
+    - name: Copy binary tools, libraries, and archive files
+      run: |
+        if [ -d DemoIccMAX/Build/Tools ]; then
+          find DemoIccMAX/Build/Tools/ -type f -executable -exec cp {} artifact/ \;
+        fi
+        if [ -d DemoIccMAX/Build/bin ]; then
+          find DemoIccMAX/Build/bin/ -type f -executable -exec cp {} artifact/ \;
+        fi
+        find DemoIccMAX/Build/ -type f \( -name "*.a" -o -name "*.so" \) -exec cp {} artifact/ \;
+    # Label Artifacts for Linux x86_64
+    - name: Label Artifacts for Linux (x86_64)
+      run: |
+        mkdir -p DemoIccMAX-build-linux-x86_64
+        cp -r artifact/* DemoIccMAX-build-linux-x86_64/
+        rm -rf artifact
+    # Upload build artifacts for Linux
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: DemoIccMAX-build-linux-x86_64
+        path: DemoIccMAX-build-linux-x86_64/
+
+    # Upload scan-build reports
+    - name: Upload scan-build reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: scan-build-report-linux
+        path: DemoIccMAX/Build/scanbuild-output/
+
+  # macOS Build and Test Job
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+    # Set up Git anonymous identity
+    - name: Set up Git anonymous identity
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "GitHub Actions"
+    # Remove existing DemoIccMAX directory (if it exists)
+    - name: Remove existing DemoIccMAX directory (if it exists)
+      run: |
+        if [ -d "DemoIccMAX" ]; then
+          rm -rf DemoIccMAX
+        fi
+    # Checkout Code
+    - name: Checkout Code
+      run: |
+        git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
+        cd DemoIccMAX
+    # Install Dependencies (macOS specific)
+    - name: Install Dependencies
+      run: |
+        brew update
+        brew install nlohmann-json libxml2 wxwidgets libtiff
+    # Configure the build with CMake using scan-build
+    - name: Configure the build with CMake using scan-build
+      run: |
+        cd DemoIccMAX/Build/
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" -Wno-dev  Cmake
+        make
+    # Create artifact directory for binaries
+    - name: Create artifact directory
+      run: mkdir -p artifact
+    # Find and copy binary tools, libraries, and archive files (macOS x86_64)
+    - name: Copy binary tools, libraries, and archive files
+      run: |
+        if [ -d DemoIccMAX/Build/Tools ]; then
+          find DemoIccMAX/Build/Tools/ -type f -perm +111 -exec cp {} artifact/ \;
+        fi
+        if [ -d DemoIccMAX/Build/bin ]; then
+          find DemoIccMAX/Build/bin/ -type f -perm +111 -exec cp {} artifact/ \;
+        fi
+        find DemoIccMAX/Build/ -type f \( -name "*.a" -o -name "*.lib" -o -name "*.dylib" \) -exec cp {} artifact/ \;
+    # Label Artifacts for macOS (x86_64)
+    - name: Label Artifacts for macOS (x86_64)
+      run: |
+        mkdir -p DemoIccMAX-build-macos-x86_64
+        cp -r artifact/* DemoIccMAX-build-macos-x86_64/
+        rm -rf artifact
+    # Upload build artifacts for macOS
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: DemoIccMAX-build-macos-x86_64
+        path: DemoIccMAX-build-macos-x86_64/
+
+    # Upload scan-build reports
+    - name: Upload scan-build reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: scan-build-report-macos
+        path: DemoIccMAX/Build/scanbuild-output/

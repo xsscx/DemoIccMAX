@@ -1,0 +1,103 @@
+###############################################################
+#
+## Copyright (©) 2024 David H Hoyt. All rights reserved.
+##                 https://srd.cx
+##
+## Last Updated: 10-DEC-2024 by David Hoyt (©)
+#
+## Intent: Poll the Device and Report
+#
+## TODO: Refactor for all Windows & UNIX Device Reporting
+#
+#
+###############################################################
+
+name: "XNU PR 111"
+
+on:
+  push:
+    branches: 
+      - "pr-111"
+  pull_request:
+    branches: 
+      - "pr111"
+  workflow_dispatch:
+
+jobs:
+  build-macos-arm64:
+    runs-on: macos-latest
+
+    steps:
+    # Checkout repository
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Set up Git anonymous identity
+    - name: Set up Git anonymous identity
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "GitHub Actions"
+
+    # Clone the DemoIccMAX repository and checkout the pull request
+    - name: Clone the DemoIccMAX repository
+      run: |
+        git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
+        cd DemoIccMAX
+        git fetch origin pull/111/head:pr-111
+        git checkout pr-111
+        brew install nlohmann-json libxml2 wxwidgets libtiff
+
+    # Configure the build with CMake (keeping Cmake/ directory)
+    - name: Configure the build with CMake
+      run: |
+        cd DemoIccMAX/Build/
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \
+              -Wno-dev Cmake/
+
+    # Build the project with make
+    - name: Build project with make
+      run: |
+        cd DemoIccMAX/Build/
+        make -j32
+        make
+        make
+        uname -a
+        clang -v
+
+    # Check build success
+    - name: Check build success
+      run: |
+        if [ $? -eq 0 ]; then
+          echo "✅ Build Succeeded"
+        else
+          echo "❌ Build Failed"
+          exit 1
+        fi
+
+    # Create artifact directory for binaries
+    - name: Create artifact directory
+      run: mkdir -p artifact
+
+    # Find and copy binary tools, libraries, and archive files (macOS arm64)
+    - name: Copy binary tools, libraries, and archive files
+      run: |
+        if [ -d DemoIccMAX/Build/Tools ]; then
+          find DemoIccMAX/Build/Tools/ -type f -perm +111 -exec cp {} artifact/ \;
+        fi
+        if [ -d DemoIccMAX/Build/bin ]; then
+          find DemoIccMAX/Build/bin/ -type f -perm +111 -exec cp {} artifact/ \;
+        fi
+        find DemoIccMAX/Build/ -type f \( -name "*.a" -o -name "*.lib" -o -name "*.dylib" \) -exec cp {} artifact/ \;
+
+    # Label Artifacts for macOS (arm64)
+    - name: Label Artifacts for macOS (arm64)
+      run: mv artifact DemoIccMAX-build-arm64
+
+    # Upload build artifacts for macOS arm64
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: DemoIccMAX-build-macos-arm64
+        path: DemoIccMAX-build-arm64/

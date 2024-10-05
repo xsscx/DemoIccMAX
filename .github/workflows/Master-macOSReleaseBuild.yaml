@@ -1,0 +1,97 @@
+###############################################################
+#
+## Copyright (©) 2024 David H Hoyt. All rights reserved.
+##                 https://srd.cx
+##
+## Last Updated: 10-DEC-2024 by David Hoyt (©)
+#
+## Intent: Poll the Device and Report
+#
+## TODO: Refactor for all Windows & UNIX Device Reporting
+#
+#
+###############################################################
+
+name: "XNU Master Branch | Release"
+
+on:
+  push:
+    branches: 
+      - "master"
+  pull_request:
+    branches: 
+      - "master"
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    name: Build and Test macOS Master Branch
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    # Checkout repository
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Set up Git anonymous identity
+    - name: Set up Git anonymous identity
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "GitHub Actions"
+
+    # Fetch the specific PR branch
+    - name: Clone the DemoIccMAX repository
+      run: |
+        git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
+        cd DemoIccMAX
+        brew install nlohmann-json libxml2 wxwidgets libtiff
+        git checkout master
+
+    # Configure the build with CMake
+    - name: Configure the build with CMake
+      run: |
+        mkdir -p DemoIccMAX/Build
+        cd DemoIccMAX/Build
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Release -Wno-dev Cmake/
+
+    # Build the project using CMake
+    - name: Build project with CMake
+      run: |
+        cd DemoIccMAX/Build
+        make -j$(sysctl -n hw.ncpu)
+        make -j$(sysctl -n hw.ncpu)
+        echo "=========  RUNNER DETAILS  ========="
+        sysctl -a | grep kern.version
+        sysctl -a | grep kern.osversion
+        sysctl -a | grep kern.iossupportversion
+        sysctl -a | grep kern.osproductversion
+        sysctl -a | grep machdep.cpu.brand_string
+        csrutil status
+        xcrun --show-sdk-path
+        xcode-select -p
+        clang -v
+        lldb --version
+        env | grep -i xcode
+        env | grep -i sdk
+        env | grep -i clang
+        env | grep -i cflags
+        env | grep -i ldflags
+        env | grep -i CC
+        env | grep -i C++
+        brew list
+        ls -l /usr/lib/dyld
+        df -h
+        lldb --version
+        sips --version
+
+    # Check master build success
+    - name: Check build success
+      run: |
+        if [ $? -eq 0 ]; then
+          echo "✅ Build Succeeded"
+        else
+          echo "❌ Build Failed"
+          exit 1
+        fi

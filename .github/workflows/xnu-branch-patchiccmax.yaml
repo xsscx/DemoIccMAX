@@ -1,0 +1,115 @@
+###############################################################
+#
+## Copyright (©) 2024 David H Hoyt. All rights reserved.
+##                 https://srd.cx
+##
+## Last Updated: 10-DEC-2024 by David Hoyt (©)
+#
+## Intent: Poll the Device and Report
+#
+## TODO: Refactor for all Windows & UNIX Device Reporting
+#
+#
+###############################################################
+
+name: "XNU Branch"
+
+on:
+  push:
+    branches: 
+      - "master"
+  pull_request:
+    branches: 
+      - "master"
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    name: Build Master Branch
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    # Checkout repository
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Set up Git anonymous identity
+    - name: Set up Git anonymous identity
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "GitHub Actions"
+
+    # Fetch the specific PR branch
+    - name: Clone the PatchIccMAX repository
+      run: |
+        git clone https://github.com/xsscx/PatchIccMAX.git
+        cd PatchIccMAX
+        git checkout xnu
+        brew install nlohmann-json libxml2 wxwidgets libtiff
+
+    # Configure the build with CMake
+    - name: Configure the build with CMake
+      run: |
+        mkdir -p PatchIccMAX/Build
+        cd PatchIccMAX/Build
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \
+              -Wno-dev Cmake/
+
+    # Build the project using CMake
+    - name: Build project with CMake
+      run: |
+        cd PatchIccMAX/Build
+        make -j$(sysctl -n hw.ncpu)
+        make -j$(sysctl -n hw.ncpu)
+        sysctl -a | grep kern.version || echo "kern.version not found"
+        sysctl -a | grep kern.osversion || echo "kern.osversion not found"
+        sysctl -a | grep kern.iossupportversion || echo "kern.iossupportversion not found"
+        sysctl -a | grep kern.osproductversion || echo "kern.osproductversion not found"
+        sysctl -a | grep machdep.cpu.brand_string || echo "machdep.cpu.brand_string not found"
+        csrutil status >/dev/null 2>&1 && csrutil status || echo "csrutil not found"
+        xcrun --show-sdk-path >/dev/null 2>&1 && xcrun --show-sdk-path || echo "xcrun not found"
+        xcode-select -p >/dev/null 2>&1 && xcode-select -p || echo "xcode-select not found"
+        clang -v >/dev/null 2>&1 && clang -v || echo "clang not found"
+        clang -### -c test.c 2>&1 | grep -i 'cc1args' || echo "clang cc1args not found"
+        ld -v >/dev/null 2>&1 && ld -v || echo "ld not found"
+        lldb --version >/dev/null 2>&1 && lldb --version || echo "lldb not found"
+        env | grep -i xcode || echo "No xcode environment variables found"
+        env | grep -i sdk || echo "No sdk environment variables found"
+        env | grep -i clang || echo "No clang environment variables found"
+        env | grep -i cflags || echo "No cflags environment variables found"
+        env | grep -i ldflags || echo "No ldflags environment variables found"
+        env | grep -i CC || echo "No CC environment variables found"
+        env | grep -i C++ || echo "No C++ environment variables found"
+        brew list --versions >/dev/null 2>&1 && brew list --versions || echo "brew not found or no installed packages"
+        ls -l /usr/lib/dyld || echo "/usr/lib/dyld not found"
+        df -h || echo "df command not found"
+        command -v make >/dev/null && echo "make is installed" || echo "make is not installed"
+        command -v ninja >/dev/null && echo "ninja is installed" || echo "ninja is not installed"
+        command -v cmake >/dev/null && echo "cmake is installed" || echo "cmake is not installed"
+        command -v lldb >/dev/null && echo "lldb is installed" || echo "lldb is not installed"
+        command -v cc >/dev/null && echo "cc is installed" || echo "cc is not installed"
+        command -v gcc >/dev/null && echo "gcc is installed" || echo "gcc is not installed"
+        command -v clang++ >/dev/null && echo "clang++ is installed" || echo "clang++ is not installed"
+        lldb --version >/dev/null 2>&1 && lldb --version || echo "lldb not found"
+        sips --version >/dev/null 2>&1 && sips --version || echo "sips not found"
+
+    # Upload built binaries as artifacts
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: main_ci_macos build
+        path: PatchIccMAX/Build
+
+    # Check build success
+    - name: Check build success
+      run: |
+        if [ $? -eq 0 ]; then
+          echo "✅ Build Succeeded"
+        else
+          echo "❌ Build Failed"
+          exit 1
+        fi

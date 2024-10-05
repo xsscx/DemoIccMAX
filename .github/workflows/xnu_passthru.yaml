@@ -1,0 +1,62 @@
+###############################################################
+#
+## Copyright (©) 2024 David H Hoyt. All rights reserved.
+##                 https://srd.cx
+##
+## Last Updated: 10-DEC-2024 by David Hoyt (©)
+#
+## Intent: Poll the Device and Report
+#
+## TODO: Refactor for all Windows & UNIX Device Reporting
+#
+#
+###############################################################
+
+name: "XNU Passthru"
+
+on:
+  workflow_dispatch: # Manual trigger only
+
+jobs:
+  build-macos:
+    name: colelct Runner Profile
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    # Checkout repository
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Set up Git anonymous identity
+    - name: Set up Git anonymous identity
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "GitHub Actions"
+    # Build the project using CMake
+    - name: Build project with CMake
+      run: |
+        echo "=========  RUNNER DETAILS  ========="
+        sysctl -a | grep kern.version
+        sysctl -a | grep kern.osversion
+        sysctl -a | grep kern.iossupportversion
+        sysctl -a | grep kern.osproductversion
+        sysctl -a | grep machdep.cpu.brand_string
+        csrutil status
+        xcrun --show-sdk-path
+        xcode-select -p
+        clang -v
+        brew list
+        ls -l /usr/lib/dyld
+        df -h
+        sips --version
+    # Check master build success
+    - name: Check build success
+      run: |
+        if [ $? -eq 0 ]; then
+          echo "✅ Build Succeeded"
+        else
+          echo "❌ Build Failed"
+          exit 1
+        fi

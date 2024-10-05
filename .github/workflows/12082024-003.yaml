@@ -1,0 +1,110 @@
+###############################################################
+#
+## Copyright (©) 2024 David H Hoyt. All rights reserved.
+##                 https://srd.cx
+##
+## Last Updated: 10-DEC-2024 by David Hoyt (©)
+#
+## Intent: Poll the Device and Report
+#
+## TODO: Refactor for all Windows & UNIX Device Reporting
+#
+#
+###############################################################
+
+name: "12082024-003"
+
+on:
+  push:
+    branches:
+      - "master"
+  pull_request:
+    branches:
+      - "master"
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    name: Build and Test Linux Master Branch
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    # Checkout repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Set up Git anonymous identity
+    - name: Set up Git anonymous identity
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "GitHub Actions"
+
+    # Install dependencies
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libxml2 libxml2-dev libtiff5 libtiff5-dev nlohmann-json3-dev build-essential \
+          cmake clang clang-tools python3 python3-pip libwxgtk3.0-gtk3-dev wx-common \
+          libopencl-clang-dev curl git
+
+    # Clone the DemoIccMAX repository
+    - name: Clone the DemoIccMAX repository
+      run: |
+        git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
+        cd DemoIccMAX
+        git checkout master
+
+    # Configure the build with CMake
+    - name: Configure the build with CMake
+      run: |
+        cd DemoIccMAX/Build
+        export CC=clang
+        export CXX=clang++
+        echo "CC=clang" >> $GITHUB_ENV
+        echo "CXX=clang++" >> $GITHUB_ENV
+        clang++ --version
+        clang --version
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Release -Wno-dev Cmake/
+
+    # Build the project using CMake
+    - name: Build project with CMake
+      run: |
+        cd DemoIccMAX/Build
+        make -j$(nproc)
+
+    # Run additional system info and validation commands
+    - name: Gather system information
+      run: |
+        uname -a
+        cat /etc/os-release
+        gcc -v
+        lscpu
+        free -m
+        df -h
+
+    # Check build success
+    - name: Check build success
+      run: |
+        if [ -f DemoIccMAX/Build/CMakeCache.txt ]; then
+          echo "✅ Build configuration exists."
+        else
+          echo "❌ Build configuration failed."
+          exit 1
+        fi
+
+    # Upload built binaries as artifacts
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: master-build-linux
+        path: DemoIccMAX/Build
+
+    # Upload build logs
+    - name: Upload build logs
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-logs
+        path: DemoIccMAX/Build/CMakeCache.txt

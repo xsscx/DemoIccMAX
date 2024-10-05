@@ -1,0 +1,165 @@
+###############################################################
+#
+## Copyright (©) 2024 David H Hoyt. All rights reserved.
+##                 https://srd.cx
+##
+## Last Updated: 10-DEC-2024 by David Hoyt (©)
+#
+## Intent: Poll the Device and Report
+#
+## TODO: Refactor for all Windows & UNIX Device Reporting
+#
+#
+###############################################################
+
+name: Windows Master Branch
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      BuildConfiguration: Debug
+      BUILD_DIR: ${{ github.workspace }}/builds
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1
+
+      - name: Setup vcpkg and verify environment
+        shell: pwsh
+        run: |
+          # Define paths
+          $buildDir = "${{ env.BUILD_DIR }}"
+          $vcpkgDir = "$RUNNER_TEMP/vcpkg"
+          $outputDir = "$RUNNER_TEMP/output"
+
+          # Create necessary directories
+          New-Item -ItemType Directory -Path $buildDir -Force
+          New-Item -ItemType Directory -Path $outputDir -Force
+
+          # Check and clone vcpkg
+          if (-not (Test-Path "$vcpkgDir\installed")) {
+              git clone https://github.com/microsoft/vcpkg.git $vcpkgDir
+              cd $vcpkgDir
+              .\bootstrap-vcpkg.bat
+          } else {
+              Write-Host "vcpkg is already installed."
+          }
+
+          # Integrate and install required libraries
+          & "$vcpkgDir\vcpkg.exe" integrate install
+          & "$vcpkgDir\vcpkg.exe" install nlohmann-json:x64-windows nlohmann-json:x64-windows-static libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libxml2:x64-windows-static tiff:x64-windows-static wxwidgets:x64-windows-static --debug
+          Write-Host "vcpkg libraries installed successfully."
+
+      - name: Clone DemoIccMAX repository and verify structure
+        shell: pwsh
+        run: |
+          $buildDir = "${{ env.BUILD_DIR }}"
+          cd $buildDir
+
+          if (-not (Test-Path "$buildDir\PatchIccMAX")) {
+              git clone https://github.com/xsscx/PatchIccMAX.git PatchIccMAX
+              Write-Host "PatchIccMAX repository cloned."
+          }
+
+          cd "$buildDir\PatchIccMAX"
+          git checkout master
+          Write-Host "PatchIccMAX repository checked out to master branch."
+
+          if (-not (Test-Path "$buildDir\PatchIccMAX\Build\MSVC")) {
+              Write-Error "Directory structure is not as expected: $buildDir\PatchIccMAX\Build\MSVC"
+              exit 1
+          }
+          Write-Host "Directory structure verified."
+
+      - name: Locate MSBuild Path
+        id: msbuild-locate
+        shell: pwsh
+        run: |
+          $vswherePath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+          $msbuildPath = & $vswherePath -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+
+          if (-not $msbuildPath) {
+              Write-Error "MSBuild.exe not found."
+              exit 1
+          }
+          Write-Host "MSBuild found at: $msbuildPath"
+          echo "MSBUILD_PATH=$msbuildPath" >> $GITHUB_ENV
+
+      - name: Copy vcpkg libraries to Testing directory
+        shell: pwsh
+        run: |
+          $vcpkgLibDir = "$RUNNER_TEMP/vcpkg/installed/x64-windows/lib"
+          $vcpkgStaticLibDir = "$RUNNER_TEMP/vcpkg/installed/x64-windows-static/lib"
+          $testingDir = "${{ env.BUILD_DIR }}/PatchIccMAX/Testing"
+
+          if (-not (Test-Path $testingDir)) {
+              New-Item -ItemType Directory -Path $testingDir -Force
+          }
+
+          Copy-Item -Path "$vcpkgLibDir\*.dll" -Destination $testingDir -Force
+          Copy-Item -Path "$vcpkgStaticLibDir\*.lib" -Destination $testingDir -Force
+          Write-Host "Copied vcpkg libraries to Testing directory."
+
+      - name: Verify solution file and build the project
+        shell: pwsh
+        run: |
+          $solutionPath = "${{ env.BUILD_DIR }}\PatchIccMAX\Build\MSVC\BuildAll_v22.sln"
+          if (!(Test-Path $solutionPath)) {
+              Write-Error "Solution file does not exist: $solutionPath"
+              exit 1
+          }
+          Write-Host "Solution file exists at: $solutionPath"
+
+          $msbuildPath = "$env:MSBUILD_PATH"
+          cd "${{ env.BUILD_DIR }}\PatchIccMAX"
+          & $msbuildPath .\Build\MSVC\BuildAll_v22.sln `
+              /m `
+              /p:Configuration=Debug `
+              /p:Platform=x64 `
+              /p:AdditionalIncludeDirectories="$RUNNER_TEMP/vcpkg/installed/x64-windows/include" `
+              /p:AdditionalLibraryDirectories="$RUNNER_TEMP/vcpkg/installed/x64-windows/lib" `
+              /p:CLToolAdditionalOptions="/fsanitize=address /Zi /Od /DDEBUG /W4" `
+              /p:LinkToolAdditionalOptions="/fsanitize=address /DEBUG /INCREMENTAL:NO"
+
+      - name: Copy build artifacts to output directory
+        shell: pwsh
+        run: |
+          $directory = "${{ env.BUILD_DIR }}\PatchIccMAX"
+          $outputDir = "$RUNNER_TEMP/output"
+          $files = Get-ChildItem -Path $directory -Recurse -Include *.exe, *.dll, *.lib
+          foreach ($file in $files) {
+              Copy-Item -Path $file.FullName -Destination $outputDir -Force
+          }
+          Write-Host "Build artifacts copied to output directory."
+
+      - name: List files in the output directory
+        shell: pwsh
+        run: |
+          Write-Host "Listing files in the output directory:"
+          Get-ChildItem -Path "$RUNNER_TEMP/output"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: PatchIccMAX-Build-Artifacts
+          path: $RUNNER_TEMP/output
+
+      - name: Upload build logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: PatchIccMAX-Build-Logs
+          path: ${{ github.workspace }}/logs

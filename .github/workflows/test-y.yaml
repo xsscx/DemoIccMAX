@@ -1,0 +1,86 @@
+###############################################################
+#
+## Copyright (©) 2024 David H Hoyt. All rights reserved.
+##                 https://srd.cx
+##
+## Last Updated: 10-DEC-2024 by David Hoyt (©)
+#
+## Intent: Poll the Device and Report
+#
+## TODO: Refactor for all Windows & UNIX Device Reporting
+#
+#
+###############################################################
+
+name: "TEST-Y Passthru"
+
+on:
+  workflow_dispatch: # Manual trigger only
+
+jobs:
+  build-macos:
+    name: Collect Runner Profile
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    # Step 1: Setup Environment Variables
+    - name: Setup Environment Variables
+      run: |
+        export LOG_FILE="runner_profile.log"
+        export ERROR_LOG="error.log"
+        echo "LOG_FILE set to: $LOG_FILE"
+        echo "ERROR_LOG set to: $ERROR_LOG"
+
+    # Step 2: Start Logging
+    - name: Start Logging
+      run: |
+        echo "========= BEGIN RUNNER PROFILE COLLECTION =========" > runner_profile.log
+        echo "All errors will be logged in error.log" > error.log
+
+    # Step 3: Check for Required Programs and Dependencies
+    - name: Check for Required Programs
+      run: |
+        required_programs=("sysctl" "csrutil" "xcrun" "xcode-select" "clang" "brew" "ls" "df" "sips")
+        for prog in "${required_programs[@]}"; do
+          if ! command -v $prog &> /dev/null; then
+            echo "$prog is not installed or not in PATH. Exiting." | tee -a error.log
+            exit 1
+          fi
+        done
+        echo "All required programs are available." >> runner_profile.log
+
+    # Step 4: Collect System and Environment Information
+    - name: Collect System Information
+      run: |
+        {
+          echo "========= RUNNER DETAILS ========="
+          sysctl -a | grep kern.version
+          sysctl -a | grep kern.osversion
+          sysctl -a | grep kern.iossupportversion
+          sysctl -a | grep kern.osproductversion
+          sysctl -a | grep machdep.cpu.brand_string
+          csrutil status
+          xcrun --show-sdk-path
+          xcode-select -p
+          clang -v
+          brew list
+          ls -l /usr/lib/dyld
+          df -h
+          sips --version
+        } >> runner_profile.log 2>> error.log || {
+          echo "Error occurred during system information collection. Check error.log."
+          exit 1
+        }
+
+    # Step 5: Finish and Summarize
+    - name: Finalize and Summarize
+      run: |
+        echo "========= COMPLETION =========" >> runner_profile.log
+        if [ -s error.log ]; then
+          echo "Errors were encountered. Review error.log for details." | tee -a runner_profile.log
+        else
+          echo "Runner profile collected successfully without errors." | tee -a runner_profile.log
+        fi
+

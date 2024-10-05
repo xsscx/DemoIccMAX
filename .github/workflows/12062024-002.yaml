@@ -1,0 +1,140 @@
+###############################################################
+#
+## Copyright (©) 2024 David H Hoyt. All rights reserved.
+##                 https://srd.cx
+##
+## Last Updated: 10-DEC-2024 by David Hoyt (©)
+#
+## Intent: Poll the Device and Report
+#
+## TODO: Refactor for all Windows & UNIX Device Reporting
+#
+#
+###############################################################
+
+name: 12062024-002
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      BuildConfiguration: Debug
+      BUILD_DIR: ${{ github.workspace }}/builds
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1
+
+      - name: Setup vcpkg
+        shell: pwsh
+        run: |
+          $vcpkgDir = "$RUNNER_TEMP/vcpkg"
+          if (-not (Test-Path "$vcpkgDir\installed")) {
+              git clone https://github.com/microsoft/vcpkg.git $vcpkgDir
+              cd $vcpkgDir
+              .\bootstrap-vcpkg.bat
+          } else {
+              Write-Host "vcpkg is already installed."
+          }
+          & "$vcpkgDir\vcpkg.exe" integrate install
+          & "$vcpkgDir\vcpkg.exe" install nlohmann-json:x64-windows nlohmann-json:x64-windows-static libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libxml2:x64-windows-static tiff:x64-windows-static wxwidgets:x64-windows-static
+          Write-Host "vcpkg libraries installed successfully."
+
+      - name: Clone DemoIccMAX repository
+        shell: pwsh
+        run: |
+          git clone https://github.com/xsscx/PatchIccMAX.git
+          cd PatchIccMAX
+          git checkout master
+
+      - name: Locate MSBuild Path
+        id: msbuild-locate
+        shell: pwsh
+        run: |
+          $vswherePath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+          $msbuildPath = & $vswherePath -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+          if (-not $msbuildPath) {
+              Write-Error "MSBuild.exe not found."
+              exit 1
+          }
+          echo "MSBUILD_PATH=$msbuildPath" >> $GITHUB_ENV
+
+      - name: Build Project
+        shell: pwsh
+        run: |
+          pwd
+          $solutionPath = "Build\MSVC\BuildAll_v22.sln"
+          if (!(Test-Path $solutionPath)) {
+              Write-Error "Solution file does not exist: $solutionPath"
+              exit 1
+          }
+          $msbuildPath = "$env:MSBUILD_PATH"
+          cd "PatchIccMAX"
+          & $msbuildPath .\Build\MSVC\BuildAll_v22.sln `
+              /m `
+              /p:Configuration=Debug `
+              /p:Platform=x64 `
+              /p:AdditionalIncludeDirectories="$RUNNER_TEMP/vcpkg/installed/x64-windows/include" `
+              /p:AdditionalLibraryDirectories="$RUNNER_TEMP/vcpkg/installed/x64-windows/lib" `
+              /p:CLToolAdditionalOptions="/fsanitize=address /Zi /Od /DDEBUG /W4" `
+              /p:LinkToolAdditionalOptions="/fsanitize=address /DEBUG /INCREMENTAL:NO"
+
+      - name: Ensure output directory exists
+        shell: pwsh
+        run: |
+          $outputDir = "$RUNNER_TEMP/output"
+          if (-not (Test-Path $outputDir)) {
+              New-Item -ItemType Directory -Path $outputDir -Force
+          }
+          Write-Host "Output directory is ready: $outputDir."
+
+      - name: Copy build artifacts to output directory
+        shell: pwsh
+        run: |
+          $buildDir = "${{ env.BUILD_DIR }}\PatchIccMAX"
+          $outputDir = "$RUNNER_TEMP/output"
+          $artifacts = Get-ChildItem -Path $buildDir -Recurse -Include *.exe, *.dll, *.lib
+          if ($artifacts.Count -eq 0) {
+              Write-Error "No build artifacts found in: $buildDir"
+              exit 1
+          }
+          foreach ($file in $artifacts) {
+              Copy-Item -Path $file.FullName -Destination $outputDir
+          }
+          Write-Host "Build artifacts copied to output directory."
+
+      - name: List files in the output directory
+        shell: pwsh
+        run: |
+          $outputDir = "$RUNNER_TEMP/output"
+          if (-not (Test-Path $outputDir)) {
+              Write-Error "Output directory does not exist: $outputDir"
+              exit 1
+          }
+          Write-Host "Listing files in the output directory:"
+          Get-ChildItem -Path $outputDir
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: PatchIccMAX-Build-Artifacts
+          path: $RUNNER_TEMP/output
+
+      - name: Upload build logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: PatchIccMAX-Build-Logs
+          path: ${{ github.workspace }}/logs

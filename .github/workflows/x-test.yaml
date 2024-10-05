@@ -1,0 +1,44 @@
+###############################################################
+#
+## Copyright (©) 2024 David H Hoyt. All rights reserved.
+##                 https://srd.cx
+##
+## Last Updated: 10-DEC-2024 by David Hoyt (©)
+#
+## Intent: Poll the Device and Report
+#
+## TODO: Refactor for all Windows & UNIX Device Reporting
+#
+#
+###############################################################
+
+name: "TESTX Passthru"
+
+on:
+  workflow_dispatch: # Manual trigger only
+
+jobs:
+  build-macos:
+    name: Collect Runner Profile
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    # Collect Elements & Attributes for XNU Configuration
+    - name: Collect Elements & Attributes
+      run: |
+        echo "=========  RUNNER DETAILS  ========="
+        sysctl -a | grep kern.version
+        sysctl -a | grep kern.osversion
+        sysctl -a | grep kern.iossupportversion
+        sysctl -a | grep kern.osproductversion
+        sysctl -a | grep machdep.cpu.brand_string
+        csrutil status
+        xcrun --show-sdk-path
+        xcode-select -p
+        clang -v
+        brew list
+        ls -l /usr/lib/dyld
+        df -h
+        sips --version

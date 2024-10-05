@@ -1,0 +1,165 @@
+name: "PCS Revert Scanbuild"
+
+on:
+  workflow_dispatch:    # Allows manual triggering from the Actions tab in GitHub
+  push:                 # Automatically triggers on push events to the PCS_Refactor branch (optional)
+    branches:
+      - PCS_Refactor
+
+jobs:
+  revert_commit_and_build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set up Git anonymous identity
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "GitHub Actions"
+    - name: Remove existing DemoIccMAX directory (if it exists)
+      run: |
+        if [ -d "DemoIccMAX" ]; then
+          rm -rf DemoIccMAX
+        fi
+    - name: Checkout Code
+      run: |
+        git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
+        cd DemoIccMAX
+        git checkout PCS_Refactor
+    # Install Dependencies
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        
+        # Check and install if packages are not installed
+        for pkg in libwxgtk-media3.0-gtk3-dev libwxgtk-webview3.0-gtk3-dev \
+                   libwxgtk3.0-gtk3-dev libxml2 libtiff5 libxml2-dev libtiff5-dev \
+                   clang-tools; do
+          if ! dpkg-query -W -f='${Status}' $pkg | grep "install ok installed"; then
+            echo "Installing $pkg"
+            sudo apt-get install -y $pkg
+          else
+            echo "$pkg is already installed"
+          fi
+        done
+    - name: Attempt Revert
+      run: |
+        cd DemoIccMAX
+        git revert --no-edit b90ac3933da99179df26351c39d8d9d706ac1cc6 || true
+    - name: Handle Conflict Locally
+      run: |
+        cd DemoIccMAX
+        if [ -f Tools/CmdLine/IccCommon/IccCmmConfig.cpp ]; then
+          # Resolve conflict by removing the file (this will not persist in the repository)
+          git rm Tools/CmdLine/IccCommon/IccCmmConfig.cpp
+          git add .
+          git revert --continue || true
+        else
+          echo "No conflict resolution needed"
+        fi
+    # Configure the build with CMake using scan-build
+    - name: Configure the build with CMake using scan-build
+      run: |
+        cd DemoIccMAX/Build/
+        scan-build --html-title="Static Analysis Report" -o scanbuild-output cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \
+              -Wno-dev Cmake/
+    # Check for build errors with scan-build
+    - name: Check for build errors with scan-build
+      run: |
+        set -euxo pipefail  # Enable safer shell scripting
+        cd DemoIccMAX/Build/
+        scan-build --html-title="Static Analysis Report" -o scanbuild-output make -j32
+    # Create artifact directory for binaries
+    - name: Create artifact directory
+      run: mkdir -p artifact
+
+    # Find and copy binary tools, libraries, and archive files (Linux x86_64)
+    - name: Copy binary tools, libraries, and archive files
+      run: |
+        if [ -d DemoIccMAX/Build/Tools ]; then
+          find DemoIccMAX/Build/Tools/ -type f -executable -exec cp {} artifact/ \;
+        fi
+        if [ -d DemoIccMAX/Build/bin ]; then
+          find DemoIccMAX/Build/bin/ -type f -executable -exec cp {} artifact/ \;
+        fi
+        find DemoIccMAX/Build/ -type f \( -name "*.a" -o -name "*.so" \) -exec cp {} artifact/ \;
+# Label Artifacts for Linux x86_64
+    - name: Label Artifacts for Linux (x86_64)
+      run: |
+        mkdir -p DemoIccMAX-build-linux-x86_64
+        cp -r artifact/* DemoIccMAX-build-linux-x86_64/
+        rm -rf artifact
+    # Upload build artifacts for Linux
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: DemoIccMAX-build-linux-x86_64
+        path: DemoIccMAX-build-linux-x86_64/
+
+    # Upload scan-build reports
+    - name: Upload scan-build reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: scan-build-report-linux
+        path: DemoIccMAX/Build/scanbuild-output/
+
+  # macOS Build and Test Job
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+    # Checkout repository
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Set up Git anonymous identity
+    - name: Set up Git anonymous identity
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "GitHub Actions"
+    # Clone the DemoIccMAX repository and checkout the pull request
+    - name: Clone the DemoIccMAX repository
+      run: |
+        git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
+        cd DemoIccMAX
+        git fetch origin pull/94/head:pr-94
+        git checkout pr-94
+        git revert --no-edit b90ac3933da99179df26351c39d8d9d706ac1cc6  # Optional revert
+    # Configure the build with CMake
+    - name: Configure the build with CMake
+      run: |
+        cd DemoIccMAX/Build/
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \
+              -Wno-dev Cmake/
+    # Build the project with make
+    - name: Build project
+      run: |
+        cd DemoIccMAX/Build/
+        make
+    # Create artifact directory for binaries
+    - name: Create artifact directory
+      run: mkdir -p artifact
+
+    # Find and copy binary tools, libraries, and archive files (macOS x86_64)
+    - name: Copy binary tools, libraries, and archive files
+      run: |
+        if [ -d DemoIccMAX/Build/Tools ]; then
+          find DemoIccMAX/Build/Tools/ -type f -perm +111 -exec cp {} artifact/ \;
+        fi
+        if [ -d DemoIccMAX/Build/bin ]; then
+          find DemoIccMAX/Build/bin/ -type f -perm +111 -exec cp {} artifact/ \;
+        fi
+        find DemoIccMAX/Build/ -type f \( -name "*.a" -o -name "*.lib" -o -name "*.dylib" \) -exec cp {} artifact/ \;
+    # Label Artifacts for macOS (x86_64)
+    - name: Label Artifacts for macOS (x86_64)
+      run: mv artifact DemoIccMAX-build-macos-x86_64
+
+    # Upload build artifacts for macOS
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: DemoIccMAX-build-macos-x86_64
+        path: DemoIccMAX-build-macos-x86_64/

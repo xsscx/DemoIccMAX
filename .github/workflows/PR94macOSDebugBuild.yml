@@ -1,0 +1,81 @@
+name: "PR94 macOS x86_64"
+
+on:
+  push:
+    branches: 
+      - "pr-94"
+  pull_request:
+    branches: 
+      - "pr-94"
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    name: Build and Test macOS Debug (PR-94)
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    # Checkout repository
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Set up Git anonymous identity
+    - name: Set up Git anonymous identity
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "GitHub Actions"
+
+    # Fetch the specific PR branch
+    - name: Clone the DemoIccMAX repository
+      run: |
+        git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
+        cd DemoIccMAX
+        git fetch origin pull/94/head:pr-94
+        git checkout pr-94
+        git revert --no-edit b90ac3933da99179df26351c39d8d9d706ac1cc6
+
+    # Cache CMake and build dependencies for faster subsequent builds
+    - name: Cache CMake files
+      uses: actions/cache@v4
+      with:
+        path: |
+          DemoIccMAX/Build/
+          ${{ github.workspace }}/.cache/cmake
+        key: cmake-cache-${{ runner.os }}-${{ github.sha }}
+        restore-keys: |
+          cmake-cache-${{ runner.os }}
+
+    # Configure the build with CMake
+    - name: Configure the build with CMake
+      run: |
+        mkdir -p DemoIccMAX/Build
+        cd DemoIccMAX/Build
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \
+              -Wno-dev Cmake/
+
+    # Build the project using CMake
+    - name: Build project with CMake
+      run: |
+        cd DemoIccMAX/Build
+        make -j$(sysctl -n hw.ncpu)
+
+    # Upload built binaries as artifacts
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: pr94_macos_x86-64 build
+        path: DemoIccMAX/Build
+
+    # Check build success
+    - name: Check build success
+      run: |
+        if [ $? -eq 0 ]; then
+          echo "✅ Build Succeeded"
+        else
+          echo "❌ Build Failed"
+          exit 1
+        fi

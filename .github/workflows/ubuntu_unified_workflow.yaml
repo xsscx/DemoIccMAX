@@ -1,0 +1,85 @@
+name: Master Branch Workflow
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+jobs:
+  revert_commit_and_build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set up Git anonymous identity
+      uses: actions/checkout@v2
+
+    - name: Remove existing DemoIccMAX directory (if it exists)
+      run: |
+        if [ -d "DemoIccMAX" ]; then
+          rm -rf DemoIccMAX
+        fi
+
+    - name: Checkout Code
+      run: |
+        git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
+        cd DemoIccMAX
+
+    - name: Install Dependencies (Ubuntu)
+      run: |
+        sudo apt-get update
+        # Check and install if packages are not installed
+        for pkg in libwxgtk-media3.0-gtk3-dev libwxgtk-webview3.0-gtk3-dev libwxgtk3.0-gtk3-dev libxml2 libtiff5 libxml2-dev libtiff5-dev clang-tools; do
+          if ! dpkg-query -W -f='${Status}' $pkg | grep "install ok installed"; then
+            sudo apt-get install -y $pkg
+          fi
+        done
+        
+    # Configure the build with CMake (keeping Cmake/ directory)
+    - name: Configure the build with CMake
+      run: |
+        cd DemoIccMAX/Build/
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \
+              -Wno-dev Cmake/
+
+    # Build the project with make and log output
+    - name: Build project with make and log output
+      run: |
+        cd DemoIccMAX/Build/
+        make
+
+    # Create artifact directory for binaries
+    - name: Create artifact directory
+      run: mkdir -p DemoIccMAX/Build/artifact
+
+    # Move only .lib, .a, .so, .dll, and binaries (including a.out) to artifact directory
+    - name: Move libraries and binaries to artifact directory
+      run: |
+        find DemoIccMAX/Build/ -type f \( -name '*.lib' -o -name '*.a' -o -name '*.so' -o -name '*.dll' -o -name 'a.out' -o -executable \) -exec mv {} DemoIccMAX/Build/artifact/ \;
+
+    # Clean the target directory before moving artifacts
+    - name: Clean target directory before moving artifacts
+      run: |
+        if [ -d "DemoIccMAX-build-ubuntu-latest" ]; then
+          rm -rf DemoIccMAX-build-ubuntu-latest
+        fi
+
+    # Label Artifacts for ubuntu-latest
+    - name: Label Artifacts for ubuntu-latest
+      run: mv DemoIccMAX/Build/artifact DemoIccMAX-build-ubuntu-latest
+
+    # Upload build artifacts for ubuntu-latest
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: DemoIccMAX-build-ubuntu-latest
+        path: DemoIccMAX-build-ubuntu-latest/
+
+    # Upload build log as an artifact
+    - name: Upload build log
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-log
+        path: build.log

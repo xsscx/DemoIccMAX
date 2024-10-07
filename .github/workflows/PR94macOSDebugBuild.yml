@@ -62,8 +62,6 @@ jobs:
       run: |
         cd DemoIccMAX/Build
         make -j$(sysctl -n hw.ncpu)
-        sips
-        sips -v
 
     # Upload built binaries as artifacts
     - name: Upload build artifacts

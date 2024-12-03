@@ -32,7 +32,7 @@ jobs:
       run: |
         git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
         cd DemoIccMAX
-        git revert --no-edit b90ac3933da99179df26351c39d8d9d706ac1cc6
+        brew install nlohmann-json libxml2 wxwidgets libtiff
 
     # Configure the build with CMake
     - name: Configure the build with CMake

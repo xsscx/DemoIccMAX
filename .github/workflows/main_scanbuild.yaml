@@ -31,9 +31,7 @@ jobs:
         sudo apt-get update
         
         # Check and install if packages are not installed
-        for pkg in libwxgtk-media3.0-gtk3-dev libwxgtk-webview3.0-gtk3-dev \
-                   libwxgtk3.0-gtk3-dev libxml2 libtiff5 libxml2-dev libtiff5-dev \
-                   clang-tools; do
+        for pkg in wx-common curl git make cmake clang clang-tools libxml2 libxml2-dev nlohmann-json3-dev build-essential libtiff-tools libtiff-opengl; do
           if ! dpkg-query -W -f='${Status}' $pkg | grep "install ok installed"; then
             echo "Installing $pkg"
             sudo apt-get install -y $pkg

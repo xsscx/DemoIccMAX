@@ -30,7 +30,7 @@ jobs:
       run: |
         sudo apt-get update  
         # Check and install if packages are not installed
-            sudo apt-get install -y wx-common wx3.2-headers libtiff6 curl git make cmake clang clang-tools libxml2 libxml2-dev nlohmann-json3-dev build-essential
+            sudo apt-get install -y wx-common wxwidgets libtiff6 curl git make cmake clang clang-tools libxml2 libxml2-dev nlohmann-json3-dev build-essential
     - name: Attempt Revert
       run: |
         cd DemoIccMAX

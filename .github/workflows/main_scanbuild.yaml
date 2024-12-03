@@ -37,7 +37,6 @@ jobs:
     # Configure the build with CMake using scan-build
     - name: Configure the build with CMake using scan-build
       run: |
-        export CXX=clang++
         cd DemoIccMAX/Build/
         scan-build --html-title="Static Analysis Report" -o scanbuild-output cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
               -DCMAKE_BUILD_TYPE=Debug \

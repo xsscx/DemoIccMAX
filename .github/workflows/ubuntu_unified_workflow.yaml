@@ -10,40 +10,16 @@ jobs:
   revert_commit_and_build:
     runs-on: ubuntu-latest
 
-    steps:
-    - name: Set up Git anonymous identity
-      uses: actions/checkout@v2
-
-    - name: Remove existing DemoIccMAX directory (if it exists)
-      run: |
-        if [ -d "DemoIccMAX" ]; then
-          rm -rf DemoIccMAX
-        fi
-
-    - name: Checkout Code
-      run: |
-        git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
-        cd DemoIccMAX
-
-    - name: Install Dependencies (Ubuntu)
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libwxgtk3.2-dev libwxgtk-media3.2-dev libwxgtk-webview3.2-dev wx-common wx3.2-headers libtiff6 curl git make cmake clang clang-tools libxml2 libxml2-dev nlohmann-json3-dev build-essential || { echo "Error: Failed to install dependencies. Exiting."; exit 1; }
-        
-    # Configure the build with CMake (keeping Cmake/ directory)
-    - name: Configure the build with CMake
-      run: |
-        cd DemoIccMAX/Build/
-        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
-              -DCMAKE_BUILD_TYPE=Debug \
-              -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \
-              -Wno-dev Cmake/
-
-    # Build the project with make and log output
-    - name: Build project with make and log output
-      run: |
-        cd DemoIccMAX/Build/
-        make
+# Set Clang++
+export CXX=clang++
+# change to /tmp dir
+cd /tmp
+# Build Project
+/bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/InternationalColorConsortium/DemoIccMAX/refs/heads/master/contrib/Build/cmake/xnu_build_master_branch.zsh)"
+# change to ../Testing/ dir
+cd ../Testing/
+# Build ICC Profiles
+/bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/InternationalColorConsortium/DemoIccMAX/refs/heads/master/contrib/UnitTest/CreateAllProfiles.sh)"
 
     # Create artifact directory for binaries
     - name: Create artifact directory

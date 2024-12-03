@@ -1,4 +1,4 @@
-name: masterBuild CI
+name: Master Asan Check
 
 on:
   workflow_dispatch:    # Allows manual triggering from the Actions tab in GitHub
@@ -26,20 +26,8 @@ jobs:
       run: |
         git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
         cd DemoIccMAX
-        git checkout PCS_Refactor
         
-    - name: Install Dependencies
-      run: |
-        sudo apt-get update
-        for pkg in libwxgtk-media3.0-gtk3-dev libwxgtk-webview3.0-gtk3-dev \
-                   libwxgtk3.0-gtk3-dev libxml2 libtiff5 libxml2-dev libtiff5-dev \
-                   clang-tools; do
-          if ! dpkg-query -W -f='${Status}' $pkg | grep "install ok installed"; then
-            sudo apt-get install -y $pkg
-          fi
-        done
-        
-    - name: Attempt Revert
+    - name: apt install
       run: |
         cd DemoIccMAX
         sudo apt-get install -y wx-common wx3.2-headers libtiff6 curl git make cmake clang clang-tools libxml2 libxml2-dev nlohmann-json3-dev build-essential

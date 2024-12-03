@@ -44,7 +44,6 @@ jobs:
     - name: Attempt Revert
       run: |
         cd DemoIccMAX
-        git revert --no-edit b90ac3933da99179df26351c39d8d9d706ac1cc6
     # Configure the build with CMake using scan-build
     - name: Configure the build with CMake using scan-build
       run: |

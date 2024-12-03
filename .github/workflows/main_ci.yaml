@@ -37,6 +37,7 @@ jobs:
     - name: Configure the build with CMake
       run: |
         cd DemoIccMAX/Build
+        brew install nlohmann-json libxml2 wxwidgets libtiff
         cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
               -DCMAKE_BUILD_TYPE=Debug \
               -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \

@@ -10,8 +10,6 @@ jobs:
   revert_commit_and_build:
     runs-on: ubuntu-latest
 
-# Set Clang++
-export CXX=clang++
 # change to /tmp dir
 cd /tmp
 # Build Project

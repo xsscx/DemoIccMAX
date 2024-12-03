@@ -28,17 +28,9 @@ jobs:
     # Install Dependencies
     - name: Install Dependencies
       run: |
-        sudo apt-get update
-        
+        sudo apt-get update  
         # Check and install if packages are not installed
-        for pkg in wx-common curl git make cmake clang clang-tools libxml2 libxml2-dev nlohmann-json3-dev build-essential libtiff-tools libtiff-opengl; do
-          if ! dpkg-query -W -f='${Status}' $pkg | grep "install ok installed"; then
-            echo "Installing $pkg"
-            sudo apt-get install -y $pkg
-          else
-            echo "$pkg is already installed"
-          fi
-        done
+            sudo apt-get install -y wx-common curl git make cmake clang clang-tools libxml2 libxml2-dev nlohmann-json3-dev build-essential libtiff-tools libtiff-opengl
     - name: Attempt Revert
       run: |
         cd DemoIccMAX

@@ -1,4 +1,4 @@
-name: Windows Development Branch
+name: Windows Master Branch
 
 on:
   push:
@@ -49,7 +49,7 @@ jobs:
         }
         cd "$buildDir\PatchIccMAX"
         # git checkout development
-        Write-Host "DemoIccMAX repository checked out to development branch."
+        Write-Host "PatchIccMAX repository checked out to master branch."
         # Verify directory structure
         if (-not (Test-Path "$buildDir\PatchIccMAX\Build\MSVC")) {
           Write-Error "Directory structure is not as expected: $buildDir\PatchIccMAX\Build\MSVC"

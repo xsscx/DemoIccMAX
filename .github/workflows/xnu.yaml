@@ -49,6 +49,7 @@ jobs:
         set -euxo pipefail  # Enable safer shell scripting
         cd DemoIccMAX/Build/
         pwd
+        make
         uname -a
     # Create artifact directory for binaries
     - name: Create artifact directory

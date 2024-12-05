@@ -40,9 +40,12 @@ jobs:
       run: |
         cd DemoIccMAX/Build/
         COMPILER="clang++"
-        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
-              -DCMAKE_BUILD_TYPE=Release \
-              -Wno-dev Cmake/
+        uname -a
+        clang -v
+        gcc -v
+        sudo apt list
+        
+    #   cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Release -Wno-dev Cmake/
     # Check for build errors with scan-build
     - name: Check for build errors with scan-build
       run: |

@@ -1,5 +1,5 @@
 
-name: Windows Development Branch
+name: WinMasterBranch
 
 on:
   push:

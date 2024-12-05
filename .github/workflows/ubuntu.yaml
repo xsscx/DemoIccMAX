@@ -50,6 +50,11 @@ jobs:
         set -euxo pipefail  # Enable safer shell scripting
         cd DemoIccMAX/Build/
         scan-build --html-title="Static Analysis Report" -o scanbuild-output make
+        scan-build --html-title="Static Analysis Report" -o scanbuild-output make
+        scan-build --html-title="Static Analysis Report" -o scanbuild-output make
+        uname -a gvv -v
+        clang -v
+        apt --installed list 
     # Create artifact directory for binaries
     - name: Create artifact directory
       run: mkdir -p artifact

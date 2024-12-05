@@ -21,7 +21,20 @@ jobs:
 
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1
-
+      
+    - name: Find MSBuild Path using vswhere
+      id: msbuild-locate
+      run: |
+        $vswherePath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+        $msbuildPath = & $vswherePath -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+        if (-not $msbuildPath) {
+          Write-Error "MSBuild.exe not found"
+          exit 1
+        } else {
+          Write-Host "MSBuild found at: $msbuildPath"
+        }
+        echo "::set-output name=msbuild-path::$msbuildPath"
+        
     - name: Setup vcpkg and clone DemoIccMAX repository
       run: |
         $buildDir = "${{ env.BUILD_DIR }}"
@@ -40,7 +53,11 @@ jobs:
             Write-Host "vcpkg is already installed."
         }
         .\vcpkg.exe integrate install
-        .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows --debug
+        .\vcpkg.exe install nlohmann-json:x64-windows nlohmann-json:x64-windows-static libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libxml2:x64-windows-static tiff:x64-windows-static wxwidgets:x64-windows-static --debug
+        Write-Host "Fixups for libs"
+        copy installed\x64-windows\lib\tiff.lib vcpkg\installed\x64-windows\lib\libtiff.lib
+        copy installed\x64-windows-static\lib\tiff.lib installed\x64-windows-static\lib\libtiff.lib 
+
         Write-Host "vcpkg libraries installed successfully"
         # Clone DemoIccMAX repository into the 'builds' directory
         cd $buildDir
@@ -48,7 +65,7 @@ jobs:
             git clone https://github.com/xsscx/PatchIccMAX.git PatchIccMAX  # Ensure it's placed in 'PatchIccMAX' folder
         }
         cd "$buildDir\PatchIccMAX"
-        # git checkout development
+        git checkout master
         Write-Host "PatchIccMAX repository checked out to master branch."
         # Verify directory structure
         if (-not (Test-Path "$buildDir\PatchIccMAX\Build\MSVC")) {
@@ -56,18 +73,6 @@ jobs:
           Get-ChildItem -Path $buildDir\PatchIccMAX
           exit 1
         }
-    - name: Find MSBuild Path using vswhere
-      id: msbuild-locate
-      run: |
-        $vswherePath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
-        $msbuildPath = & $vswherePath -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
-        if (-not $msbuildPath) {
-          Write-Error "MSBuild.exe not found"
-          exit 1
-        } else {
-          Write-Host "MSBuild found at: $msbuildPath"
-        }
-        echo "::set-output name=msbuild-path::$msbuildPath"
     - name: Verify solution file and build the project
       run: |
         $solutionPath = "${{ env.BUILD_DIR }}\PatchIccMAX\Build\MSVC\BuildAll_v22.sln"

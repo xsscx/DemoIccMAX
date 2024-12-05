@@ -1,4 +1,4 @@
-name: "PR94 C/C++ CI Workflow"
+name: "MAUBMAC C/C++ CI Workflow"
 
 on:
   push:
@@ -39,9 +39,7 @@ jobs:
       run: |
         git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
         cd DemoIccMAX
-        git fetch origin pull/94/head:pr-94
-        git checkout pr-94
-        git revert --no-edit b90ac3933da99179df26351c39d8d9d706ac1cc6  # Optional revert
+        git checkout master
 
     # Configure the build with CMake using scan-build
     - name: Configure the build with CMake using scan-build

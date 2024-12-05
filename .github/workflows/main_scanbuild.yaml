@@ -38,6 +38,7 @@ jobs:
     - name: Configure the build with CMake using scan-build
       run: |
         cd DemoIccMAX/Build/
+        
         scan-build --html-title="Static Analysis Report" -o scanbuild-output cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
               -DCMAKE_BUILD_TYPE=Debug \
               -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \
@@ -47,6 +48,7 @@ jobs:
       run: |
         set -euxo pipefail  # Enable safer shell scripting
         cd DemoIccMAX/Build/
+        export CXX=clang++
         scan-build --html-title="Static Analysis Report" -o scanbuild-output make
     # Create artifact directory for binaries
     - name: Create artifact directory

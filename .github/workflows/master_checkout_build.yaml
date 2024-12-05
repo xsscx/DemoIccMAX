@@ -43,6 +43,11 @@ jobs:
       run: |
         cd DemoIccMAX/Build/
         make
+        make
+        make
+        uname -a
+        gcc -v
+        clang -v
         
     # Create artifact directory for binaries
     - name: Create artifact directory

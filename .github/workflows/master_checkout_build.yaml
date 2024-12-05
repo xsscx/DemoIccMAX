@@ -1,4 +1,4 @@
-name: PCS Checkout Build
+name: ZZMASBU
 
 on:
   workflow_dispatch:    # Allows manual triggering from the Actions tab in GitHub

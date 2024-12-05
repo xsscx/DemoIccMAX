@@ -30,7 +30,7 @@ jobs:
     - name: apt install
       run: |
         cd DemoIccMAX
-        sudo apt-get install -y wxwidgets libtiff-dev curl git make cmake clang clang-tools libxml2 libxml2-dev nlohmann-json3-dev build-essential
+        sudo apt-get install -y build-essential curl git make cmake clang clang-tools libxml2 libxml2-dev nlohmann-json3-dev wx-common libtiff-tools libtiff-opengl libtiff5 libwxgtk-webview3.0-gtk3
         
     - name: Configure the build with CMake
       run: |

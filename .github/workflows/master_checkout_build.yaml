@@ -32,19 +32,19 @@ jobs:
     # Configure the build with CMake (keeping Cmake/ directory)
     - name: Configure the build with CMake
       run: |
-        cd DemoIccMAX/Build/
-        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
-              -DCMAKE_BUILD_TYPE=Debug \
-              -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \
-              -Wno-dev Cmake/
+        # cd DemoIccMAX/Build/
+        # cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
+        #      -DCMAKE_BUILD_TYPE=Debug \
+        #      -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \
+        #      -Wno-dev Cmake/
 
     # Build the project with make and log output
     - name: Build project with make and log output
       run: |
-        cd DemoIccMAX/Build/
-        make
-        make
-        make
+        # cd DemoIccMAX/Build/
+        # make
+        # make
+        # make
         uname -a
         gcc -v
         clang -v

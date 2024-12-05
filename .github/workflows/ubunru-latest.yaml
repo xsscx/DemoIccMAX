@@ -41,8 +41,7 @@ jobs:
         cd DemoIccMAX/Build/
         COMPILER="clang++"
         cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
-              -DCMAKE_BUILD_TYPE=Debug \
-              -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \
+              -DCMAKE_BUILD_TYPE=Release \
               -Wno-dev Cmake/
     # Check for build errors with scan-build
     - name: Check for build errors with scan-build

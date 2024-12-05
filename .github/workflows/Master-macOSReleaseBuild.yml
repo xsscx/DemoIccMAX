@@ -1,4 +1,4 @@
-name: "XNU Master Brnach"
+name: "XNU Master Branch | Release"
 
 on:
   push:

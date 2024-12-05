@@ -49,7 +49,7 @@ jobs:
             git clone https://github.com/xsscx/PatchIccMAX.git PatchIccMAX  # Ensure it's placed in 'PatchIccMAX' folder
         }
         cd "$buildDir\PatchIccMAX"
-        git checkout development
+        git checkout master
         Write-Host "DemoIccMAX repository checked out to development branch."
         # Verify directory structure
         if (-not (Test-Path "$buildDir\PatchIccMAX\Build\MSVC")) {

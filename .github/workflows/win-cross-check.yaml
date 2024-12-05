@@ -43,6 +43,7 @@ jobs:
         .\vcpkg.exe integrate install
         .\vcpkg.exe install nlohmann-json:x64-windows nlohmann-json:x64-windows-static libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libxml2:x64-windows-static tiff:x64-windows-static wxwidgets:x64-windows-static --debug
         Write-Host "vcpkg libraries installed successfully"
+        
         # Clone DemoIccMAX repository into the 'builds' directory
         cd $buildDir
         if (-not (Test-Path "$buildDir\PatchIccMAX")) {
@@ -55,6 +56,11 @@ jobs:
         if (-not (Test-Path "$buildDir\PatchIccMAX\Build\MSVC")) {
           Write-Error "Directory structure is not as expected: $buildDir\PatchIccMAX\Build\MSVC"
           Get-ChildItem -Path $buildDir\PatchIccMAX
+          cd Testing/
+          copy $vcpkgDir\installed\x64-windows\lib\*.dll .
+          copy $vcpkgDir\irinstalled\x64-windows-static\lib\*.lib .
+          copy $vcpkgDir\installed\x64-windows-static\lib\tiff.lib .\libtiff.lib 
+          cd ..
           exit 1
         }
     - name: Find MSBuild Path using vswhere

@@ -1,4 +1,4 @@
-name: "XNU Master Brnach"
+name: "ubuntu-latest Master Brnach"
 
 on:
   workflow_dispatch:    # Allows manual triggering from the Actions tab in GitHub
@@ -39,6 +39,7 @@ jobs:
     - name: Configure the build with CMake using scan-build
       run: |
         cd DemoIccMAX/Build/
+        COMPILER="clang++"
         cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
               -DCMAKE_BUILD_TYPE=Debug \
               -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \

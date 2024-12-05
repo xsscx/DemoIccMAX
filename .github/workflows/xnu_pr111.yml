@@ -29,9 +29,9 @@ jobs:
       run: |
         git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
         cd DemoIccMAX
-        git fetch origin pull/94/head:pr-94
-        git checkout pr-94
-        git revert --no-edit b90ac3933da99179df26351c39d8d9d706ac1cc6
+        git fetch origin pull/111/head:pr-111
+        git checkout pr-111
+        sudo apt-get install -y  build-essential curl git make cmake clang clang-tools libxml2 libxml2-dev nlohmann-json3-dev wx-common libtiff-tools libtiff-opengl libtiff5 libwxgtk-webview3.0-gtk3
 
     # Configure the build with CMake (keeping Cmake/ directory)
     - name: Configure the build with CMake

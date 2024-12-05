@@ -55,8 +55,117 @@ jobs:
         .\vcpkg.exe integrate install
         .\vcpkg.exe install nlohmann-json:x64-windows nlohmann-json:x64-windows-static libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libxml2:x64-windows-static tiff:x64-windows-static wxwidgets:x64-windows-static --debug
         Write-Host "Fixups for libs"
-        copy installed\x64-windows\lib\tiff.lib vcpkg\installed\x64-windows\lib\libtiff.lib
-        copy installed\x64-windows-static\lib\tiff.lib installed\x64-windows-static\lib\libtiff.lib 
+        dir
+        pwd
+        # copy installed\x64-windows\lib\tiff.lib vcpkg\installed\x64-windows\lib\libtiff.lib
+        # copy installed\x64-windows-static\lib\tiff.lib installed\x64-windows-static\lib\libtiff.lib
+        # Function to log messages
+function Log {
+    param ([string]$Message, [string]$Level = "INFO")
+    $TimeStamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    Write-Output "$TimeStamp - [$Level] $Message"
+}
+
+# Function to handle errors
+function HandleError {
+    param ([string]$ErrorMessage, [string]$Suggestion = "")
+    Log $ErrorMessage "ERROR"
+    if ($Suggestion) {
+        Log "Suggestion: $Suggestion" "INFO"
+    }
+}
+
+# Locate vcpkg
+$vcpkgPaths = @(
+    ".\vcpkg.exe",
+    "$env:USERPROFILE\vcpkg\vcpkg.exe",
+    "$env:ProgramFiles\vcpkg\vcpkg.exe",
+    "$env:ProgramFiles(x86)\vcpkg\vcpkg.exe",
+    "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\vcpkg\vcpkg.exe",
+    "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\vcpkg\vcpkg.exe",
+    "C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\vcpkg\vcpkg.exe"
+)
+$vcpkgFound = $null
+
+foreach ($path in $vcpkgPaths) {
+    if (Test-Path $path) {
+        $vcpkgFound = $path
+        break
+    }
+}
+
+if (-not $vcpkgFound -and ($env:PATH -match "vcpkg")) {
+    $vcpkgFound = "vcpkg"
+    Log "vcpkg found in PATH environment variable."
+}
+
+if ($vcpkgFound) {
+    try {
+        # Get vcpkg version
+        $vcpkgVersion = & $vcpkgFound --version 2>&1 | Out-String
+        Log "vcpkg Executable Path: $vcpkgFound"
+        Log "vcpkg Version: $vcpkgVersion"
+
+        # Detect roots
+        $detectedVcpkgRoot = Split-Path -Parent $vcpkgFound
+        $envVcpkgRoot = $env:VCPKG_ROOT
+
+        # Check for root mismatches
+        if ($envVcpkgRoot -and ($detectedVcpkgRoot -ne $envVcpkgRoot)) {
+            Log "Warning: Detected vcpkg root ($detectedVcpkgRoot) does not match VCPKG_ROOT ($envVcpkgRoot)."
+            Log "Suggestion: Unset the VCPKG_ROOT environment variable or use --vcpkg-root to specify the root explicitly." "INFO"
+        } elseif ($envVcpkgRoot) {
+            Log "VCPKG_ROOT matches detected vcpkg root: $envVcpkgRoot"
+        } else {
+            Log "VCPKG_ROOT is not set. Detected vcpkg root: $detectedVcpkgRoot"
+        }
+
+        # Check for manifest mode
+        if (Test-Path "$PWD\vcpkg.json") {
+            Log "vcpkg is using manifest mode (vcpkg.json detected in the current directory)."
+        } else {
+            Log "vcpkg does not appear to be using manifest mode. Legacy or non-JSON configuration likely."
+        }
+
+        # Test integration
+        $integrationStatus = & $vcpkgFound integrate install 2>&1 | Out-String
+        if ($integrationStatus -match "Applied user-wide integration") {
+            Log "vcpkg is integrated with the system. MSBuild and CMake integration are active."
+        } elseif ($integrationStatus -match "warning") {
+            Log "Integration Warning: $integrationStatus" "WARNING"
+        } else {
+            Log "vcpkg integration status: $integrationStatus"
+        }
+
+        # List installed packages
+        try {
+            $vcpkgList = & $vcpkgFound list 2>&1 | Out-String
+            if ($vcpkgList -match "Could not locate a manifest") {
+                HandleError "No manifest (vcpkg.json) found. This vcpkg distribution does not have a classic mode instance." `
+                            "Ensure a manifest file exists or switch to classic mode. See https://learn.microsoft.com/vcpkg/troubleshoot/build-failures"
+            } else {
+                Log "Installed vcpkg packages:"
+                Log $vcpkgList
+            }
+        } catch {
+            HandleError "Failed to retrieve installed packages." `
+                        "Ensure vcpkg is properly configured and accessible."
+        }
+
+        # Report absolute paths
+        Log "Detailed Paths:"
+        Log "vcpkg Executable: $vcpkgFound"
+        Log "Detected vcpkg Root: $detectedVcpkgRoot"
+        Log "VCPKG_ROOT Environment Variable: $envVcpkgRoot"
+
+    } catch {
+        HandleError "Failed to execute vcpkg commands." `
+                    "Check the vcpkg installation and environment variables."
+    }
+} else {
+    HandleError "vcpkg not found in common locations or PATH." `
+                "Ensure vcpkg is installed and accessible."
+}
 
         Write-Host "vcpkg libraries installed successfully"
         # Clone DemoIccMAX repository into the 'builds' directory

@@ -54,39 +54,6 @@ jobs:
         pwd
         # make
         uname -a
-    # Create artifact directory for binaries
-    - name: Create artifact directory
-      run: mkdir -p artifact
-
-    # Find and copy binary tools, libraries, and archive files (Linux x86_64)
-    - name: Copy binary tools, libraries, and archive files
-      run: |
-        if [ -d DemoIccMAX/Build/Tools ]; then
-          find DemoIccMAX/Build/Tools/ -type f -executable -exec cp {} artifact/ \;
-        fi
-        if [ -d DemoIccMAX/Build/bin ]; then
-          find DemoIccMAX/Build/bin/ -type f -executable -exec cp {} artifact/ \;
-        fi
-        find DemoIccMAX/Build/ -type f \( -name "*.a" -o -name "*.so" \) -exec cp {} artifact/ \;
-    # Label Artifacts for Linux x86_64
-    - name: Label Artifacts for Linux (x86_64)
-      run: |
-        mkdir -p DemoIccMAX-build-linux-x86_64
-        cp -r artifact/* DemoIccMAX-build-linux-x86_64/
-        rm -rf artifact
-    # Upload build artifacts for Linux
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: DemoIccMAX-build-linux-x86_64
-        path: DemoIccMAX-build-linux-x86_64/
-
-    # Upload scan-build reports
-    - name: Upload scan-build reports
-      uses: actions/upload-artifact@v4
-      with:
-        name: scan-build-report-linux
-        path: DemoIccMAX/Build/scanbuild-output/
 
   # macOS Build and Test Job
   build-macos:

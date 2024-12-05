@@ -31,7 +31,7 @@ jobs:
         cd DemoIccMAX
         git fetch origin pull/111/head:pr-111
         git checkout pr-111
-        sudo apt-get install -y  build-essential curl git make cmake clang clang-tools libxml2 libxml2-dev nlohmann-json3-dev wx-common libtiff-tools libtiff-opengl libtiff5 libwxgtk-webview3.0-gtk3
+        brew install nlohmann-json libxml2 wxwidgets libtiff
 
     # Configure the build with CMake (keeping Cmake/ directory)
     - name: Configure the build with CMake

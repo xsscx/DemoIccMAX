@@ -60,15 +60,18 @@ jobs:
         # copy installed\x64-windows\lib\tiff.lib vcpkg\installed\x64-windows\lib\libtiff.lib
         # copy installed\x64-windows-static\lib\tiff.lib installed\x64-windows-static\lib\libtiff.lib
         # Function to log messages
-function Log {
-    param ([string]$Message, [string]$Level = "INFO")
-    $TimeStamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    Write-Output "$TimeStamp - [$Level] $Message"
-}
+        function Log {
+          param ([string]$Message, [string]$Level = "INFO")
+          $TimeStamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+          Write-Output "$TimeStamp - [$Level] $Message"
+          }
 
 # Function to handle errors
 function HandleError {
-    param ([string]$ErrorMessage, [string]$Suggestion = "")
+    param (
+        [string]$ErrorMessage,
+        [string]$Suggestion = ""
+    )
     Log $ErrorMessage "ERROR"
     if ($Suggestion) {
         Log "Suggestion: $Suggestion" "INFO"
@@ -86,7 +89,6 @@ $vcpkgPaths = @(
     "C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\vcpkg\vcpkg.exe"
 )
 $vcpkgFound = $null
-
 foreach ($path in $vcpkgPaths) {
     if (Test-Path $path) {
         $vcpkgFound = $path
@@ -167,21 +169,23 @@ if ($vcpkgFound) {
                 "Ensure vcpkg is installed and accessible."
 }
 
-        Write-Host "vcpkg libraries installed successfully"
-        # Clone DemoIccMAX repository into the 'builds' directory
-        cd $buildDir
-        if (-not (Test-Path "$buildDir\PatchIccMAX")) {
-            git clone https://github.com/xsscx/PatchIccMAX.git PatchIccMAX  # Ensure it's placed in 'PatchIccMAX' folder
-        }
-        cd "$buildDir\PatchIccMAX"
-        git checkout master
-        Write-Host "PatchIccMAX repository checked out to master branch."
-        # Verify directory structure
-        if (-not (Test-Path "$buildDir\PatchIccMAX\Build\MSVC")) {
-          Write-Error "Directory structure is not as expected: $buildDir\PatchIccMAX\Build\MSVC"
-          Get-ChildItem -Path $buildDir\PatchIccMAX
-          exit 1
-        }
+Write-Host "vcpkg libraries installed successfully"
+
+# Clone DemoIccMAX repository into the 'builds' directory
+cd $buildDir
+if (-not (Test-Path "$buildDir\PatchIccMAX")) {
+    git clone https://github.com/xsscx/PatchIccMAX.git PatchIccMAX  # Ensure it's placed in 'PatchIccMAX' folder
+}
+cd "$buildDir\PatchIccMAX"
+git checkout master
+Write-Host "PatchIccMAX repository checked out to master branch."
+
+# Verify directory structure
+if (-not (Test-Path "$buildDir\PatchIccMAX\Build\MSVC")) {
+    Write-Error "Directory structure is not as expected: $buildDir\PatchIccMAX\Build\MSVC"
+    Get-ChildItem -Path $buildDir\PatchIccMAX
+    exit 1
+}
     - name: Verify solution file and build the project
       run: |
         $solutionPath = "${{ env.BUILD_DIR }}\PatchIccMAX\Build\MSVC\BuildAll_v22.sln"

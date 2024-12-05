@@ -1,17 +1,17 @@
-name: "macOS x86_64"
+name: "XNU Master Brnach"
 
 on:
   push:
     branches: 
-      - "pr-94"
+      - "master"
   pull_request:
     branches: 
-      - "pr-94"
+      - "master"
   workflow_dispatch:
 
 jobs:
   build-macos:
-    name: Build and Test macOS Debug (PR-94)
+    name: Build and Test macOS Master Branch
     runs-on: macos-latest
     strategy:
       fail-fast: false
@@ -32,14 +32,6 @@ jobs:
       run: |
         git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
         cd DemoIccMAX
-        uname -a
-        sysctl -a | grep kern.version
-        sysctl -a | grep kern.osversion
-        sysctl -a | grep kern.osproductversion 
-        xcrun  --show-sdk-path
-        csrutil status
-        clang -v
-        sysctl -a | grep brand
         brew install nlohmann-json libxml2 wxwidgets libtiff
         git checkout master
 
@@ -48,25 +40,31 @@ jobs:
       run: |
         mkdir -p DemoIccMAX/Build
         cd DemoIccMAX/Build
-        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
-              -DCMAKE_BUILD_TYPE=Debug \
-              -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \
-              -Wno-dev Cmake/
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Release -Wno-dev Cmake/
 
     # Build the project using CMake
     - name: Build project with CMake
       run: |
         cd DemoIccMAX/Build
         make -j$(sysctl -n hw.ncpu)
+        make -j$(sysctl -n hw.ncpu)
+        uname -a
+        sysctl -a | grep kern.version
+        sysctl -a | grep kern.osversion
+        sysctl -a | grep kern.osproductversion 
+        xcrun  --show-sdk-path
+        csrutil status
+        clang -v
+        sysctl -a | grep brand
 
     # Upload built binaries as artifacts
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: pr94_macos_x86-64 build
+        name: master build
         path: DemoIccMAX/Build
 
-    # Check build success
+    # Check master build success
     - name: Check build success
       run: |
         if [ $? -eq 0 ]; then

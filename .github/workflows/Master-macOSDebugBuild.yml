@@ -1,4 +1,4 @@
-name: "PR94 macOS x86_64"
+name: "macOS x86_64"
 
 on:
   push:
@@ -32,9 +32,15 @@ jobs:
       run: |
         git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
         cd DemoIccMAX
-        git fetch origin pull/94/head:pr-94
-        git checkout pr-94
-        git revert --no-edit b90ac3933da99179df26351c39d8d9d706ac1cc6
+        uname -a
+        sysctl -a | grep kern.version
+        sysctl -a | grep kern.osversion
+        sysctl -a | grep kern.osproductversion 
+        xcrun  --show-sdk-path
+        csrutil status
+        clang -v
+        sysctl -a | grep brand 
+        git checkout master
 
     # Cache CMake and build dependencies for faster subsequent builds
     - name: Cache CMake files

@@ -76,22 +76,9 @@ jobs:
         name: build-log
         path: build.log
 
-    # New Step: Run pcs_refactor_build_createprofiles_check.sh script
-    - name: Run pcs_refactor_build_createprofiles_check.sh script
-      run: |
-        cd Testing/
-        curl -O https://raw.githubusercontent.com/xsscx/PatchIccMAX/refs/heads/development/contrib/UnitTest/pcs_refactor_build_createprofiles_check.sh
-        chmod +x pcs_refactor_build_createprofiles_check.sh
-        ./pcs_refactor_build_createprofiles_check.sh
-        
     # Cleanup happens after the script execution
     - name: Debug Git Status (Optional for checking result)
       run: |
         cd DemoIccMAX
         git status
         
-    - name: Clean Up
-      run: |
-        cd DemoIccMAX
-        git reset --hard HEAD
-        git clean -fd

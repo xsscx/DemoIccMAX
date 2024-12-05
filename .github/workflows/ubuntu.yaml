@@ -1,4 +1,4 @@
-name: "Master macOS Ubuntu Scanbuild"
+name: "MaUbuMasBu"
 
 on:
   workflow_dispatch:    # Allows manual triggering from the Actions tab in GitHub

@@ -66,6 +66,16 @@ jobs:
           Write-Output "$TimeStamp - [$Level] $Message"
           }
 
+# Function to log messages
+function Log {
+    param (
+        [string]$Message,
+        [string]$Level = "INFO"
+    )
+    $TimeStamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    Write-Output "$TimeStamp - [$Level] $Message"
+}
+
 # Function to handle errors
 function HandleError {
     param (

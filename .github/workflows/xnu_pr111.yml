@@ -47,6 +47,10 @@ jobs:
       run: |
         cd DemoIccMAX/Build/
         make -j8
+        make
+        make
+        uname -a
+        clang -v
 
     # Check build success
     - name: Check build success

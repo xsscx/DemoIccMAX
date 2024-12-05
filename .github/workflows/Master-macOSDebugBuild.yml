@@ -39,7 +39,8 @@ jobs:
         xcrun  --show-sdk-path
         csrutil status
         clang -v
-        sysctl -a | grep brand 
+        sysctl -a | grep brand
+        brew install nlohmann-json libxml2 wxwidgets libtiff
         git checkout master
 
     # Cache CMake and build dependencies for faster subsequent builds

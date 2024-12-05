@@ -43,17 +43,6 @@ jobs:
         brew install nlohmann-json libxml2 wxwidgets libtiff
         git checkout master
 
-    # Cache CMake and build dependencies for faster subsequent builds
-    - name: Cache CMake files
-      uses: actions/cache@v4
-      with:
-        path: |
-          DemoIccMAX/Build/
-          ${{ github.workspace }}/.cache/cmake
-        key: cmake-cache-${{ runner.os }}-${{ github.sha }}
-        restore-keys: |
-          cmake-cache-${{ runner.os }}
-
     # Configure the build with CMake
     - name: Configure the build with CMake
       run: |

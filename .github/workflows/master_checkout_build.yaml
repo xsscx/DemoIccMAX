@@ -4,7 +4,7 @@ on:
   workflow_dispatch:    # Allows manual triggering from the Actions tab in GitHub
   push:                 # Automatically triggers on push events to the PCS_Refactor branch
     branches:
-      - PCS_Refactor
+      - master
 
 jobs:
   build_and_test:
@@ -26,7 +26,8 @@ jobs:
       run: |
         git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
         cd DemoIccMAX
-        git checkout PCS_Refactor
+        git checkout master
+        sudo apt-get install -y wx-common curl git make cmake clang clang-tools libxml2 libxml2-dev nlohmann-json3-dev build-essential libtiff-tools libtiff-dev libtiff5 libtiff-opengl libwxgtk-webview3.0-gtk3
 
     # Configure the build with CMake (keeping Cmake/ directory)
     - name: Configure the build with CMake

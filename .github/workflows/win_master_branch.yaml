@@ -13,6 +13,10 @@ jobs:
   build:
     runs-on: windows-latest
 
+    env:
+      BuildConfiguration: Debug
+      BUILD_DIR: ${{ github.workspace }}/builds
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -20,192 +24,128 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
 
-      - name: Run Inline Script
-        shell: powershell
+      - name: Setup vcpkg and verify environment
+        shell: pwsh
         run: |
-          # Function to log messages
-          function Log {
-              param (
-                  [string]$Message,
-                  [string]$Level = "INFO"
-              )
-              $TimeStamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-              Write-Output "$TimeStamp - [$Level] $Message"
-          }
+          # Define paths
+          $buildDir = "${{ env.BUILD_DIR }}"
+          $vcpkgDir = "$RUNNER_TEMP/vcpkg"
+          $outputDir = "$RUNNER_TEMP/output"
 
-          # Function to handle errors
-          function HandleError {
-              param (
-                  [string]$ErrorMessage,
-                  [string]$Suggestion = ""
-              )
-              Log $ErrorMessage "ERROR"
-              if ($Suggestion) {
-                  Log "Suggestion: $Suggestion" "INFO"
-              }
-          }
+          # Create necessary directories
+          New-Item -ItemType Directory -Path $buildDir -Force
+          New-Item -ItemType Directory -Path $outputDir -Force
 
-          # Locate vcpkg
-          $vcpkgPaths = @(
-              ".\vcpkg.exe",
-              "$env:USERPROFILE\vcpkg\vcpkg.exe",
-              "$env:ProgramFiles\vcpkg\vcpkg.exe",
-              "$env:ProgramFiles(x86)\vcpkg\vcpkg.exe",
-              "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\vcpkg\vcpkg.exe",
-              "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\vcpkg\vcpkg.exe",
-              "C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\vcpkg\vcpkg.exe"
-          )
-          $vcpkgFound = $null
-          foreach ($path in $vcpkgPaths) {
-              if (Test-Path $path) {
-                  $vcpkgFound = $path
-                  break
-              }
-          }
-
-          if (-not $vcpkgFound -and ($env:PATH -match "vcpkg")) {
-              $vcpkgFound = "vcpkg"
-              Log "vcpkg found in PATH environment variable."
-          }
-
-          if ($vcpkgFound) {
-              try {
-                  # Get vcpkg version
-                  $vcpkgVersion = & $vcpkgFound --version 2>&1 | Out-String
-                  Log "vcpkg Executable Path: $vcpkgFound"
-                  Log "vcpkg Version: $vcpkgVersion"
-
-                  # Detect roots
-                  $detectedVcpkgRoot = Split-Path -Parent $vcpkgFound
-                  $envVcpkgRoot = $env:VCPKG_ROOT
-
-                  # Check for root mismatches
-                  if ($envVcpkgRoot -and ($detectedVcpkgRoot -ne $envVcpkgRoot)) {
-                      Log "Warning: Detected vcpkg root ($detectedVcpkgRoot) does not match VCPKG_ROOT ($envVcpkgRoot)."
-                      Log "Suggestion: Unset the VCPKG_ROOT environment variable or use --vcpkg-root to specify the root explicitly." "INFO"
-                  } elseif ($envVcpkgRoot) {
-                      Log "VCPKG_ROOT matches detected vcpkg root: $envVcpkgRoot"
-                  } else {
-                      Log "VCPKG_ROOT is not set. Detected vcpkg root: $detectedVcpkgRoot"
-                  }
-
-                  # Check for manifest mode
-                  if (Test-Path "$PWD\vcpkg.json") {
-                      Log "vcpkg is using manifest mode (vcpkg.json detected in the current directory)."
-                  } else {
-                      Log "vcpkg does not appear to be using manifest mode. Legacy or non-JSON configuration likely."
-                  }
-
-                  # Test integration
-                  $integrationStatus = & $vcpkgFound integrate install 2>&1 | Out-String
-                  if ($integrationStatus -match "Applied user-wide integration") {
-                      Log "vcpkg is integrated with the system. MSBuild and CMake integration are active."
-                  } elseif ($integrationStatus -match "warning") {
-                      Log "Integration Warning: $integrationStatus" "WARNING"
-                  } else {
-                      Log "vcpkg integration status: $integrationStatus"
-                  }
-
-                  # List installed packages
-                  try {
-                      $vcpkgList = & $vcpkgFound list 2>&1 | Out-String
-                      if ($vcpkgList -match "Could not locate a manifest") {
-                          HandleError "No manifest (vcpkg.json) found. This vcpkg distribution does not have a classic mode instance." `
-                                      "Ensure a manifest file exists or switch to classic mode. See https://learn.microsoft.com/vcpkg/troubleshoot/build-failures"
-                      } else {
-                          Log "Installed vcpkg packages:"
-                          Log $vcpkgList
-                      }
-                  } catch {
-                      HandleError "Failed to retrieve installed packages." `
-                                  "Ensure vcpkg is properly configured and accessible."
-                  }
-
-                  # Report absolute paths
-                  Log "Detailed Paths:"
-                  Log "vcpkg Executable: $vcpkgFound"
-                  Log "Detected vcpkg Root: $detectedVcpkgRoot"
-                  Log "VCPKG_ROOT Environment Variable: $envVcpkgRoot"
-
-              } catch {
-                  HandleError "Failed to execute vcpkg commands." `
-                              "Check the vcpkg installation and environment variables."
-              }
+          # Check and clone vcpkg
+          if (-not (Test-Path "$vcpkgDir\installed")) {
+              git clone https://github.com/microsoft/vcpkg.git $vcpkgDir
+              cd $vcpkgDir
+              .\bootstrap-vcpkg.bat
           } else {
-              HandleError "vcpkg not found in common locations or PATH." `
-                          "Ensure vcpkg is installed and accessible."
+              Write-Host "vcpkg is already installed."
           }
 
-- name: Clone DemoIccMAX repository and verify structure
-  run: |
-    $buildDir = "${{ env.BUILD_DIR }}"
-    # Clone the repository into the 'builds' directory
-    cd $buildDir
-    if (-not (Test-Path "$buildDir\PatchIccMAX")) {
-        git clone https://github.com/xsscx/PatchIccMAX.git PatchIccMAX
-        Write-Host "PatchIccMAX repository cloned."
-    }
-    cd "$buildDir\PatchIccMAX"
-    git checkout master
-    Write-Host "PatchIccMAX repository checked out to master branch."
+          # Integrate and install required libraries
+          & "$vcpkgDir\vcpkg.exe" integrate install
+          & "$vcpkgDir\vcpkg.exe" install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows --debug
+          Write-Host "vcpkg libraries installed successfully."
 
-    # Verify the directory structure
-    if (-not (Test-Path "$buildDir\PatchIccMAX\Build\MSVC")) {
-        Write-Error "Directory structure is not as expected: $buildDir\PatchIccMAX\Build\MSVC"
-        Get-ChildItem -Path $buildDir\PatchIccMAX
-        exit 1
-    }
-    Write-Host "Directory structure verified."
+      - name: Clone DemoIccMAX repository and verify structure
+        shell: pwsh
+        run: |
+          $buildDir = "${{ env.BUILD_DIR }}"
+          cd $buildDir
 
-- name: Verify solution file and build the project
-  run: |
-    $solutionPath = "${{ env.BUILD_DIR }}\PatchIccMAX\Build\MSVC\BuildAll_v22.sln"
-    if (!(Test-Path $solutionPath)) {
-        Write-Error "Solution file does not exist: $solutionPath"
-        Get-ChildItem -Path "${{ env.BUILD_DIR }}\PatchIccMAX\Build\MSVC"
-        exit 1
-    } else {
-        Write-Host "Solution file exists at: $solutionPath"
-    }
+          if (-not (Test-Path "$buildDir\PatchIccMAX")) {
+              git clone https://github.com/xsscx/PatchIccMAX.git PatchIccMAX
+              Write-Host "PatchIccMAX repository cloned."
+          }
 
-    # Build the project using the dynamically located MSBuild
-    $msbuildPath = "${{ steps.msbuild-locate.outputs['msbuild-path'] }}"
-    $buildDir = "${{ env.BUILD_DIR }}\PatchIccMAX"
-    cd $buildDir
-    & $msbuildPath .\Build\MSVC\BuildAll_v22.sln `
-        /m `
-        /p:Configuration=Debug `
-        /p:Platform=x64 `
-        /p:AdditionalIncludeDirectories="$RUNNER_TEMP/vcpkg/installed/x64-windows/include" `
-        /p:AdditionalLibraryDirectories="$RUNNER_TEMP/vcpkg/installed/x64-windows/lib" `
-        /p:CLToolAdditionalOptions="/fsanitize=address /Zi /Od /DDEBUG /W4" `
-        /p:LinkToolAdditionalOptions="/fsanitize=address /DEBUG /INCREMENTAL:NO"
+          cd "$buildDir\PatchIccMAX"
+          git checkout master
+          Write-Host "PatchIccMAX repository checked out to master branch."
 
-- name: Copy build artifacts to output directory
-  run: |
-    $directory = "${{ env.BUILD_DIR }}\PatchIccMAX"
-    $outputDir = "$RUNNER_TEMP/output"
-    $files = Get-ChildItem -Path $directory -Recurse -Include *.exe, *.dll, *.lib
-    foreach ($file in $files) {
-        Copy-Item -Path $file.FullName -Destination $outputDir
-    }
-    Write-Host "Build artifacts copied to output directory."
+          if (-not (Test-Path "$buildDir\PatchIccMAX\Build\MSVC")) {
+              Write-Error "Directory structure is not as expected: $buildDir\PatchIccMAX\Build\MSVC"
+              exit 1
+          }
+          Write-Host "Directory structure verified."
 
-- name: List files in the output directory
-  run: |
-    Write-Host "Listing files in the output directory:"
-    Get-ChildItem -Path "$RUNNER_TEMP/output"
+      - name: Locate MSBuild Path
+        id: msbuild-locate
+        shell: pwsh
+        run: |
+          $vswherePath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+          $msbuildPath = & $vswherePath -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
 
-# Upload build artifacts
-- name: Upload build artifacts
-  uses: actions/upload-artifact@v3
-  with:
-    name: PatchIccMAX-Build-Artifacts
-    path: $RUNNER_TEMP/output
+          if (-not $msbuildPath) {
+              Write-Error "MSBuild.exe not found."
+              exit 1
+          }
+          Write-Host "MSBuild found at: $msbuildPath"
+          echo "MSBUILD_PATH=$msbuildPath" >> $GITHUB_ENV
 
-# Upload build logs (optional)
-- name: Upload build logs
-  uses: actions/upload-artifact@v3
-  with:
-    name: PatchIccMAX-Build-Logs
-    path: ${{ github.workspace }}/logs
+      - name: Copy vcpkg libraries to Testing directory
+        shell: pwsh
+        run: |
+          $vcpkgLibDir = "$RUNNER_TEMP/vcpkg/installed/x64-windows/lib"
+          $vcpkgStaticLibDir = "$RUNNER_TEMP/vcpkg/installed/x64-windows-static/lib"
+          $testingDir = "${{ env.BUILD_DIR }}/PatchIccMAX/Testing"
+
+          if (-not (Test-Path $testingDir)) {
+              New-Item -ItemType Directory -Path $testingDir -Force
+          }
+
+          Copy-Item -Path "$vcpkgLibDir\*.dll" -Destination $testingDir -Force
+          Copy-Item -Path "$vcpkgStaticLibDir\*.lib" -Destination $testingDir -Force
+          Write-Host "Copied vcpkg libraries to Testing directory."
+
+      - name: Verify solution file and build the project
+        shell: pwsh
+        run: |
+          $solutionPath = "${{ env.BUILD_DIR }}\PatchIccMAX\Build\MSVC\BuildAll_v22.sln"
+          if (!(Test-Path $solutionPath)) {
+              Write-Error "Solution file does not exist: $solutionPath"
+              exit 1
+          }
+          Write-Host "Solution file exists at: $solutionPath"
+
+          $msbuildPath = "$env:MSBUILD_PATH"
+          cd "${{ env.BUILD_DIR }}\PatchIccMAX"
+          & $msbuildPath .\Build\MSVC\BuildAll_v22.sln `
+              /m `
+              /p:Configuration=Debug `
+              /p:Platform=x64 `
+              /p:AdditionalIncludeDirectories="$RUNNER_TEMP/vcpkg/installed/x64-windows/include" `
+              /p:AdditionalLibraryDirectories="$RUNNER_TEMP/vcpkg/installed/x64-windows/lib" `
+              /p:CLToolAdditionalOptions="/fsanitize=address /Zi /Od /DDEBUG /W4" `
+              /p:LinkToolAdditionalOptions="/fsanitize=address /DEBUG /INCREMENTAL:NO"
+
+      - name: Copy build artifacts to output directory
+        shell: pwsh
+        run: |
+          $directory = "${{ env.BUILD_DIR }}\PatchIccMAX"
+          $outputDir = "$RUNNER_TEMP/output"
+          $files = Get-ChildItem -Path $directory -Recurse -Include *.exe, *.dll, *.lib
+          foreach ($file in $files) {
+              Copy-Item -Path $file.FullName -Destination $outputDir -Force
+          }
+          Write-Host "Build artifacts copied to output directory."
+
+      - name: List files in the output directory
+        shell: pwsh
+        run: |
+          Write-Host "Listing files in the output directory:"
+          Get-ChildItem -Path "$RUNNER_TEMP/output"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: PatchIccMAX-Build-Artifacts
+          path: $RUNNER_TEMP/output
+
+      - name: Upload build logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: PatchIccMAX-Build-Logs
+          path: ${{ github.workspace }}/logs

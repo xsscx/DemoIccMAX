@@ -61,13 +61,14 @@ jobs:
       - name: Build Project
         shell: pwsh
         run: |
-          $solutionPath = "${{ env.BUILD_DIR }}\PatchIccMAX\Build\MSVC\BuildAll_v22.sln"
+          pwd
+          $solutionPath = "Build\MSVC\BuildAll_v22.sln"
           if (!(Test-Path $solutionPath)) {
               Write-Error "Solution file does not exist: $solutionPath"
               exit 1
           }
           $msbuildPath = "$env:MSBUILD_PATH"
-          cd "${{ env.BUILD_DIR }}\PatchIccMAX"
+          cd "PatchIccMAX"
           & $msbuildPath .\Build\MSVC\BuildAll_v22.sln `
               /m `
               /p:Configuration=Debug `

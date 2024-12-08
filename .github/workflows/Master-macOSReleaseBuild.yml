@@ -48,14 +48,42 @@ jobs:
         cd DemoIccMAX/Build
         make -j$(sysctl -n hw.ncpu)
         make -j$(sysctl -n hw.ncpu)
-        uname -a
-        sysctl -a | grep kern.version
-        sysctl -a | grep kern.osversion
-        sysctl -a | grep kern.osproductversion 
+        uname -a 
         xcrun  --show-sdk-path
         csrutil status
-        clang -v
         sysctl -a | grep brand
+        sysctl -a | grep kern.version
+        sysctl -a | grep kern.osversion
+        sysctl -a | grep kern.iossupportversion
+        sysctl -a | grep kern.osproductversion
+        sysctl -a | grep machdep.cpu.brand_string
+        csrutil status
+        xcrun --show-sdk-path
+        xcode-select -p
+        clang -v
+        clang -### -c test.c 2>&1 | grep -i 'cc1args'
+        ld -v
+        lldb --version
+        env | grep -i xcode
+        env | grep -i sdk
+        env | grep -i clang
+        env | grep -i cflags
+        env | grep -i ldflags
+        env | grep -i CC
+        env | grep -i C++
+        brew list --versions
+        ls -l /usr/lib/dyld
+        df -h
+        which make
+        which ninja
+        which cmake
+        which lldb
+        which cc
+        which gcc
+        which clang++
+        lldb --version
+        sips --version
+ 
 
     # Check master build success
     - name: Check build success

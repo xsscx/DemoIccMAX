@@ -1,5 +1,4 @@
-
-name: WinMasterBranch
+name: TEST2
 
 on:
   push:
@@ -41,26 +40,20 @@ jobs:
             Write-Host "vcpkg is already installed."
         }
         .\vcpkg.exe integrate install
-        .\vcpkg.exe install nlohmann-json:x64-windows nlohmann-json:x64-windows-static libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libxml2:x64-windows-static tiff:x64-windows-static wxwidgets:x64-windows-static --debug
+        .\vcpkg.exe install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows --debug
         Write-Host "vcpkg libraries installed successfully"
-        
         # Clone DemoIccMAX repository into the 'builds' directory
         cd $buildDir
         if (-not (Test-Path "$buildDir\PatchIccMAX")) {
             git clone https://github.com/xsscx/PatchIccMAX.git PatchIccMAX  # Ensure it's placed in 'PatchIccMAX' folder
         }
         cd "$buildDir\PatchIccMAX"
-        git checkout master
+        # git checkout development
         Write-Host "DemoIccMAX repository checked out to development branch."
         # Verify directory structure
         if (-not (Test-Path "$buildDir\PatchIccMAX\Build\MSVC")) {
           Write-Error "Directory structure is not as expected: $buildDir\PatchIccMAX\Build\MSVC"
           Get-ChildItem -Path $buildDir\PatchIccMAX
-          cd Testing/
-          copy $vcpkgDir\installed\x64-windows\lib\*.dll .
-          copy $vcpkgDir\irinstalled\x64-windows-static\lib\*.lib .
-          copy $vcpkgDir\installed\x64-windows-static\lib\tiff.lib .\libtiff.lib 
-          cd ..
           exit 1
         }
     - name: Find MSBuild Path using vswhere

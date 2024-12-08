@@ -13,70 +13,80 @@ jobs:
     env:
       BUILD_DIR: ${{ github.workspace }}/builds  # Define BUILD_DIR environment variable
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-    - name: Execute PowerShell Command
-      run: |
-        Write-Host "Starting the PowerShell script execution..."
-        try {
-            iex (iwr -Uri "https://raw.githubusercontent.com/InternationalColorConsortium/DemoIccMAX/refs/heads/master/contrib/Build/VS2022C/build.ps1").Content
-            Write-Host "PowerShell script executed successfully."
-        } catch {
-            Write-Error "Error occurred while executing the PowerShell script: $_"
-            exit 1
-        }
-      shell: pwsh
+      - name: Check for msbuild in Path
+        run: |
+          Write-Host "Checking if msbuild is available in the PATH..."
+          if (-not (Get-Command msbuild -ErrorAction SilentlyContinue)) {
+              Write-Error "msbuild is not available in the PATH. Please ensure Visual Studio is installed, and msbuild is added to the PATH."
+              exit 1
+          }
+          Write-Host "msbuild is available in the PATH."
+        shell: pwsh
 
-    - name: Prepare Output Directory
-      run: |
-        $outputDir = "$RUNNER_TEMP/output"
-        if (-not (Test-Path $outputDir)) {
-            Write-Host "Creating output directory: $outputDir"
-            New-Item -ItemType Directory -Path $outputDir -Force
-        } else {
-            Write-Host "Output directory already exists: $outputDir"
-        }
-      shell: pwsh
+      - name: Execute PowerShell Command
+        run: |
+          Write-Host "Starting the PowerShell script execution..."
+          try {
+              iex (iwr -Uri "https://raw.githubusercontent.com/InternationalColorConsortium/DemoIccMAX/refs/heads/master/contrib/Build/VS2022C/build.ps1").Content
+              Write-Host "PowerShell script executed successfully."
+          } catch {
+              Write-Error "Error occurred while executing the PowerShell script: $_"
+              exit 1
+          }
+        shell: pwsh
 
-    - name: Copy Build Artifacts
-      run: |
-        Write-Host "Copying build artifacts to output directory..."
-        $directory = "${{ env.BUILD_DIR }}\PatchIccMAX"
-        $outputDir = "$RUNNER_TEMP/output"
-        if (-not (Test-Path $directory)) {
-            Write-Error "Build directory does not exist: $directory"
-            exit 1
-        }
-        $files = Get-ChildItem -Path $directory -Recurse -Include *.exe, *.dll, *.lib
-        if ($files.Count -eq 0) {
-            Write-Error "No build artifacts found in: $directory"
-            exit 1
-        }
-        foreach ($file in $files) {
-            Copy-Item -Path $file.FullName -Destination $outputDir
-            Write-Host "Copied: $file.FullName"
-        }
-        Write-Host "Build artifacts copied successfully to: $outputDir"
-      shell: pwsh
+      - name: Prepare Output Directory
+        run: |
+          $outputDir = "$RUNNER_TEMP/output"
+          if (-not (Test-Path $outputDir)) {
+              Write-Host "Creating output directory: $outputDir"
+              New-Item -ItemType Directory -Path $outputDir -Force
+          } else {
+              Write-Host "Output directory already exists: $outputDir"
+          }
+        shell: pwsh
 
-    - name: List Files in Output Directory
-      run: |
-        $outputDir = "$RUNNER_TEMP/output"
-        Write-Host "Listing files in the output directory:"
-        Get-ChildItem -Path $outputDir | ForEach-Object {
-            Write-Host " - $_.FullName"
-        }
-      shell: pwsh
+      - name: Copy Build Artifacts
+        run: |
+          Write-Host "Copying build artifacts to output directory..."
+          $directory = "${{ env.BUILD_DIR }}\PatchIccMAX"
+          $outputDir = "$RUNNER_TEMP/output"
+          if (-not (Test-Path $directory)) {
+              Write-Error "Build directory does not exist: $directory"
+              exit 1
+          }
+          $files = Get-ChildItem -Path $directory -Recurse -Include *.exe, *.dll, *.lib
+          if ($files.Count -eq 0) {
+              Write-Error "No build artifacts found in: $directory"
+              exit 1
+          }
+          foreach ($file in $files) {
+              Copy-Item -Path $file.FullName -Destination $outputDir
+              Write-Host "Copied: $file.FullName"
+          }
+          Write-Host "Build artifacts copied successfully to: $outputDir"
+        shell: pwsh
 
-    - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: PatchIccMAX-Build-Artifacts
-        path: $RUNNER_TEMP/output
+      - name: List Files in Output Directory
+        run: |
+          $outputDir = "$RUNNER_TEMP/output"
+          Write-Host "Listing files in the output directory:"
+          Get-ChildItem -Path $outputDir | ForEach-Object {
+              Write-Host " - $_.FullName"
+          }
+        shell: pwsh
 
-    - name: Upload Build Logs
-      uses: actions/upload-artifact@v3
-      with:
-        name: PatchIccMAX-Build-Logs
-        path: ${{ github.workspace }}/logs
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: PatchIccMAX-Build-Artifacts
+          path: $RUNNER_TEMP/output
+
+      - name: Upload Build Logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: PatchIccMAX-Build-Logs
+          path: ${{ github.workspace }}/logs

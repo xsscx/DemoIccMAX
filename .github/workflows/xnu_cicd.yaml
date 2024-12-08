@@ -1,4 +1,4 @@
-name: "Master Revert Build CI"
+name: "macOS CI"
 
 on:
   push:

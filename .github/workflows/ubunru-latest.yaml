@@ -47,6 +47,12 @@ jobs:
     - name: Configure the build with CMake
       run: |
         cd DemoIccMAX/Build
+        export CC=clang
+        export CXX=clang++
+        echo "CC=clang" >> $GITHUB_ENV
+        echo "CXX=clang++" >> $GITHUB_ENV
+        clang++ --version
+        clang --version
         cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Release -Wno-dev Cmake/
 
     # Build the project using CMake

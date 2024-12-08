@@ -32,7 +32,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y \
-          curl git make cmake clang clang-tools libxml2 libxml2-dev build-essential  nlohmann-json3-dev
+          curl git make cmake clang clang-tools libxml2 libxml2-dev build-essential  nlohmann-json3-dev wx-common
 
     # Set Clang++ as the default compiler
     - name: Set Clang++ as the compiler

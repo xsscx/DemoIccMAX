@@ -36,18 +36,14 @@ jobs:
               Write-Host "vcpkg is already installed."
           }
           & "$vcpkgDir\vcpkg.exe" integrate install
-          & "$vcpkgDir\vcpkg.exe" install libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows --debug
+          & "$vcpkgDir\vcpkg.exe" install nlohmann-json:x64-windows nlohmann-json:x64-windows-static libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libxml2:x64-windows tiff:x64-windows wxwidgets:x64-windows libxml2:x64-windows-static tiff:x64-windows-static wxwidgets:x64-windows-static
           Write-Host "vcpkg libraries installed successfully."
 
       - name: Clone DemoIccMAX repository
         shell: pwsh
         run: |
-          $buildDir = "${{ env.BUILD_DIR }}"
-          cd $buildDir
-          if (-not (Test-Path "$buildDir\PatchIccMAX")) {
-              git clone https://github.com/xsscx/PatchIccMAX.git PatchIccMAX
-          }
-          cd "$buildDir\PatchIccMAX"
+          git clone https://github.com/xsscx/PatchIccMAX.git PatchIccMAX
+          cd PatchIccMAX"
           git checkout master
 
       - name: Locate MSBuild Path

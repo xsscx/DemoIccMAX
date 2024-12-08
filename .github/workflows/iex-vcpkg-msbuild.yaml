@@ -20,11 +20,11 @@ jobs:
         run: |
           Write-Host "Searching for msbuild..."
           $msbuildPaths = @(
-              "$env:ProgramFiles(x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+              "$env:ProgramFiles(x86)\Microsoft Visual Studio\Installer\vswhere.exe",
               "$env:ProgramFiles\Microsoft Visual Studio\Installer\vswhere.exe"
           )
-
-          # Check if vswhere.exe exists
+          
+          # Try to locate msbuild using vswhere
           foreach ($vswhere in $msbuildPaths) {
               if (Test-Path $vswhere) {
                   Write-Host "Using vswhere located at: $vswhere"
@@ -36,19 +36,27 @@ jobs:
               }
           }
 
+          # Directly check for msbuild if not found via vswhere
           if (-not $msbuildPath) {
-              Write-Error "Could not locate msbuild using vswhere or default paths. Ensure Visual Studio is installed."
-              exit 1
+              Write-Host "vswhere not found or could not locate msbuild. Attempting direct search for msbuild..."
+              $potentialMsbuild = Get-Command msbuild -ErrorAction SilentlyContinue
+              if ($potentialMsbuild) {
+                  $msbuildPath = $potentialMsbuild.Source
+                  Write-Host "msbuild found directly at: $msbuildPath"
+              } else {
+                  Write-Error "msbuild is not installed or not available in the PATH. Ensure Visual Studio is installed."
+                  exit 1
+              }
+          } else {
+              Write-Host "msbuild found via vswhere at: $msbuildPath"
           }
-
-          Write-Host "msbuild found at: $msbuildPath"
 
           # Normalize PATH to include msbuild directory
           $msbuildDir = Split-Path $msbuildPath
           $env:PATH = "$msbuildDir;$env:PATH"
           [System.Environment]::SetEnvironmentVariable('PATH', $env:PATH)
 
-          # Verify msbuild is now callable
+          # Verify msbuild is callable
           if (-not (Get-Command msbuild -ErrorAction SilentlyContinue)) {
               Write-Error "msbuild is still not callable after updating PATH."
               exit 1

@@ -63,7 +63,7 @@ jobs:
         clang++ --version
         clang --version
         pwd
-        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -Wno-dev Cmake/
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DJSON_MultipleHeaders=ON -Wno-dev Cmake/
 
     # Build the project using CMake
     - name: Build project with CMake

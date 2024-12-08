@@ -30,7 +30,7 @@ jobs:
     # Fetch the specific PR branch
     - name: Clone the PatchIccMAX repository
       run: |
-        git https://github.com/xsscx/PatchIccMAX.git
+        git clone https://github.com/xsscx/PatchIccMAX.git
         cd PatchIccMAX
         git checkout xnu
         brew install nlohmann-json libxml2 wxwidgets libtiff

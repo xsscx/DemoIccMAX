@@ -1,0 +1,69 @@
+name: "XNU Branch"
+
+on:
+  push:
+    branches: 
+      - "master"
+  pull_request:
+    branches: 
+      - "master"
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    name: Build Master Branch
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    # Checkout repository
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Set up Git anonymous identity
+    - name: Set up Git anonymous identity
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "GitHub Actions"
+
+    # Fetch the specific PR branch
+    - name: Clone the PatchIccMAX repository
+      run: |
+        git https://github.com/xsscx/PatchIccMAX.git
+        cd PatchIccMAX
+        git checkout xnu
+        brew install nlohmann-json libxml2 wxwidgets libtiff
+
+    # Configure the build with CMake
+    - name: Configure the build with CMake
+      run: |
+        mkdir -p PatchIccMAX/Build
+        cd PatchIccMAX/Build
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \
+              -Wno-dev Cmake/
+
+    # Build the project using CMake
+    - name: Build project with CMake
+      run: |
+        cd PatchIccMAX/Build
+        make -j$(sysctl -n hw.ncpu)
+
+    # Upload built binaries as artifacts
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: main_ci_macos build
+        path: PatchIccMAX/Build
+
+    # Check build success
+    - name: Check build success
+      run: |
+        if [ $? -eq 0 ]; then
+          echo "✅ Build Succeeded"
+        else
+          echo "❌ Build Failed"
+          exit 1
+        fi

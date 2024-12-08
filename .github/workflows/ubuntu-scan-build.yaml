@@ -74,7 +74,7 @@ jobs:
         echo "CXX=clang++" >> $GITHUB_ENV
         clang++ --version
         clang --version
-        scan-build cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Release -Wno-dev ../Cmake/
+        scan-build cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Release -Wno-dev Cmake/
 
     # Run scan-build for static analysis
     - name: Run scan-build for static analysis

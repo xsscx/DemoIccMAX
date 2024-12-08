@@ -32,7 +32,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y \
-          curl git make cmake clang clang-tools libwxgtk-media3.0-gtk3-dev libwxgtk-webview3.0-gtk3-dev libwxgtk3.0-gtk3-dev libxml2 libxml2-dev libtiff5 libtiff5-dev build-essential libopencl-clang-12-dev python3-clang-14
+          sudo apt-get install -y curl git make cmake clang clang-tools  libxml2 libxml2-dev  libtiff6 build-essential  nlohmann-json3-dev
 
     # Set Clang++ as the default compiler
     - name: Set Clang++ as the compiler

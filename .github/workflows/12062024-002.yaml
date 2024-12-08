@@ -42,8 +42,8 @@ jobs:
       - name: Clone DemoIccMAX repository
         shell: pwsh
         run: |
-          git clone https://github.com/xsscx/PatchIccMAX.git PatchIccMAX
-          cd PatchIccMAX"
+          git clone https://github.com/xsscx/PatchIccMAX.git
+          cd PatchIccMAX
           git checkout master
 
       - name: Locate MSBuild Path

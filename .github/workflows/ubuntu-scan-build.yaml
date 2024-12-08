@@ -36,10 +36,6 @@ jobs:
           git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
           cd DemoIccMAX
           git checkout master
-
-      # Apply Patch
-      - name: Apply Patch
-        run: |
           echo "Applying patch for gnu_cpp_pr111"
           cat <<EOF > gnu_cpp_pr111.patch
           diff --git a/Tools/CmdLine/IccCommon/IccJsonUtil.cpp b/Tools/CmdLine/IccCommon/IccJsonUtil.cpp

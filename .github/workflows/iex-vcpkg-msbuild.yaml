@@ -9,7 +9,7 @@ on:
 
 jobs:
   invoke-powershell:
-    runs-on: self-hosted
+    runs-on: windows-latest
     env:
       BUILD_DIR: ${{ github.workspace }}/builds  # Define BUILD_DIR environment variable
     steps:

@@ -21,6 +21,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxml2 libxml2-dev libtiff5 libtiff5-dev nlohmann-json3-dev build-essential \
+            cmake clang clang-tools libwxgtk3.0-gtk3-dev wx-common \
+            libopencl-clang-dev curl git llvm
+
+      # Clone the DemoIccMAX repository
+      - name: Clone the DemoIccMAX repository
+        run: |
+          git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
+          cd DemoIccMAX
+          git checkout master
+
       # Apply Patch
       - name: Apply Patch
         run: |
@@ -40,22 +56,6 @@ jobs:
            template std::string arrayToJson<icUInt32Number>(icUInt32Number*, int);
           EOF
           git apply gnu_cpp_pr111.patch
-
-      # Install dependencies
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libxml2 libxml2-dev libtiff5 libtiff5-dev nlohmann-json3-dev build-essential \
-            cmake clang clang-tools libwxgtk3.0-gtk3-dev wx-common \
-            libopencl-clang-dev curl git llvm
-
-      # Clone the DemoIccMAX repository
-      - name: Clone the DemoIccMAX repository
-        run: |
-          git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
-          cd DemoIccMAX
-          git checkout master
 
       # Configure the build with scan-build
       - name: Configure the build with scan-build
@@ -90,13 +90,6 @@ jobs:
             echo "No scan-build reports generated. Failing the workflow."
             exit 1
           fi
-
-      # Build the project (optional, if scan-build passes)
-      - name: Build project with make
-        if: always()
-        run: |
-          cd DemoIccMAX/Build
-          make -j$(nproc)
 
       # Check build success
       - name: Check build success

@@ -46,9 +46,8 @@ jobs:
     # Configure the build with CMake
     - name: Configure the build with CMake
       run: |
-        mkdir -p DemoIccMAX/Build
         cd DemoIccMAX/Build
-        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Release -Wno-dev ../Cmake/
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Release -Wno-dev Cmake/
 
     # Build the project using CMake
     - name: Build project with CMake

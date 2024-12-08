@@ -40,10 +40,10 @@ jobs:
     # Build the project with make and log output
     - name: Build project with make and log output
       run: |
-        # cd DemoIccMAX/Build/
-        # make
-        # make
-        # make
+        cd DemoIccMAX/Build/
+        make
+        make
+        make
         uname -a
         gcc -v
         clang -v

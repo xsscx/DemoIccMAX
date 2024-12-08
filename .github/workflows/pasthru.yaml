@@ -33,7 +33,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y \
           sudo apt-get find tiff
-          # sudo apt-get install -y curl git make cmake clang clang-tools  libxml2 libxml2-dev  libtiff6 build-essential  nlohmann-json3-dev
+          # sudo apt-get install -y curl git make cmake clang clang-tools  libxml2 libxml2-dev build-essential  nlohmann-json3-dev
 
     # Set Clang++ as the default compiler
     - name: Set Clang++ as the compiler
@@ -64,7 +64,7 @@ jobs:
         clang++ --version
         clang --version
         pwd
-        # cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DJSON_MultipleHeaders=ON -Wno-dev Cmake/
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DJSON_MultipleHeaders=ON -Wno-dev Cmake/
 
     # Build the project using CMake
     - name: Build project with CMake
@@ -76,9 +76,9 @@ jobs:
         ls
         hostname
         ifconfig
-        # make -j$(nproc)
-        # make -j$(nproc)
-        # make -j$(nproc)
+        make -j$(nproc)
+        make -j$(nproc)
+        make -j$(nproc)
 
     # Check build success
     - name: Check build success

@@ -1,49 +1,90 @@
-name: CKBUILD1
+name: "Linux Master Branch | Clang++ Compiler"
 
 on:
-  workflow_dispatch:    # Allows manual triggering from the Actions tab in GitHub
-  push:                 # Automatically triggers on push events to the PCS_Refactor branch
+  push:
     branches:
-      - master
+      - "master"
+  pull_request:
+    branches:
+      - "master"
+  workflow_dispatch:
 
 jobs:
-  build_and_test:
+  build-linux:
+    name: Build and Test Linux Master Branch with Clang++
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
 
     steps:
+    # Checkout repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Set up Git anonymous identity
     - name: Set up Git anonymous identity
       run: |
         git config --global user.email "github-actions@github.com"
         git config --global user.name "GitHub Actions"
 
-    - name: Remove existing DemoIccMAX directory (if it exists)
+    # Install dependencies
+    - name: Install dependencies
       run: |
-        if [ -d "DemoIccMAX" ]; then
-          rm -rf DemoIccMAX
-        fi
+        sudo apt-get update
+        sudo apt-get install -y \
+          clang clang++ cmake build-essential libxml2 libxml2-dev libtiff5 libtiff5-dev nlohmann-json3-dev \
+          wx-common libwxgtk3.0-gtk3-dev python3 python3-pip
 
-    - name: Checkout Code
+    # Set Clang++ as the default compiler
+    - name: Set Clang++ as the compiler
+      run: |
+        export CC=clang
+        export CXX=clang++
+        echo "CC=clang" >> $GITHUB_ENV
+        echo "CXX=clang++" >> $GITHUB_ENV
+        clang++ --version
+        clang --version
+
+    # Clone the DemoIccMAX repository
+    - name: Clone the DemoIccMAX repository
       run: |
         git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
-        cd DemoIccMAX/Build
-        sudo apt-get install -y wx-common curl git make cmake clang clang-tools libxml2 libxml2-dev nlohmann-json3-dev build-essential libtiff-tools libtiff-dev libtiff5 libtiff-opengl libwxgtk-webview3.0-gtk3
+        cd DemoIccMAX
+        git checkout master
 
-    # Configure the build with CMake (keeping Cmake/ directory)
+    # Configure the build with CMake
     - name: Configure the build with CMake
       run: |
-         cd DemoIccMAX/Build/
-         cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
-              -DCMAKE_BUILD_TYPE=Debug \
-              -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \
-              -Wno-dev Cmake/
+        mkdir -p DemoIccMAX/Build
+        cd DemoIccMAX/Build
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -Wno-dev ../Cmake/
 
-    # Build the project with make and log output
-    - name: Build project with make and log output
+    # Build the project using CMake
+    - name: Build project with CMake
       run: |
-        cd DemoIccMAX/Build/
-        make
-        make
-        make
-        uname -a
-        gcc -v
-        clang -v
+        cd DemoIccMAX/Build
+        make -j$(nproc)
+
+    # Check build success
+    - name: Check build success
+      run: |
+        if [ -f DemoIccMAX/Build/CMakeCache.txt ]; then
+          echo "✅ Build configuration exists."
+        else
+          echo "❌ Build configuration failed."
+          exit 1
+        fi
+
+    # Upload built binaries as artifacts
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: master-build-linux
+        path: DemoIccMAX/Build
+
+    # Upload build logs
+    - name: Upload build logs
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-logs
+        path: DemoIccMAX/Build/CMakeCache.txt

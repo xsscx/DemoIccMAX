@@ -26,7 +26,7 @@ jobs:
       run: |
         sudo apt-get update  
         # Check and install if packages are not installed
-            sudo apt-get install -y  build-essential curl git make cmake clang clang-tools libxml2 libxml2-dev nlohmann-json3-dev wx-common libtiff-tools libtiff-opengl libtiff5 libwxgtk-webview3.0-gtk3
+            sudo apt-get install -y  build-essential nlohmann-json3-dev curl git make cmake clang clang-tools libxml2 libxml2-dev nlohmann-json3-dev wx-common libtiff-tools libtiff-opengl libtiff5 libwxgtk-webview3.0-gtk3
     # Configure the build with CMake
     - name: Configure the build with CMake
       run: |

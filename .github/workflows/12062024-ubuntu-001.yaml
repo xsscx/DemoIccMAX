@@ -27,10 +27,7 @@ jobs:
         git clone https://github.com/xsscx/PatchIccMAX.git
         cd PatchIccMAX
         git checkout master
-
-    - name: Configure the Build with CMake
-      run: |
-        cd PatchIccMAX/Build
+        cd Build
         cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
               -DCMAKE_BUILD_TYPE=Debug \
               -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \
@@ -49,25 +46,3 @@ jobs:
         else
           echo "✅ Build Succeeded."
         fi
-
-    - name: Create Artifact Directory
-      run: mkdir -p PatchIccMAX/Build/artifact
-
-    - name: Move Libraries and Binaries to Artifact Directory
-      run: |
-        find PatchIccMAX/Build/ -type f \( -name '*.lib' -o -name '*.a' -o -name '*.so' -o -name '*.dll' -o -name 'a.out' -o -executable \) -exec mv {} PatchIccMAX/Build/artifact/ \;
-
-    - name: Label Artifacts for Ubuntu
-      run: mv PatchIccMAX/Build/artifact PatchIccMAX-build-ubuntu-latest
-
-    - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: PatchIccMAX-build-ubuntu-latest
-        path: PatchIccMAX-build-ubuntu-latest/
-
-    - name: Upload Build Log
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-log
-        path: build.log

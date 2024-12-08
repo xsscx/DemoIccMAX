@@ -27,8 +27,8 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y \
           libxml2 libxml2-dev libtiff5 libtiff5-dev nlohmann-json3-dev build-essential \
-          cmake clang clang-tools python3 python3-pip libwxgtk3.0-gtk3-dev wx-common \
-          libopencl-clang-dev curl git llvm scan-build
+          cmake clang clang-tools libwxgtk3.0-gtk3-dev wx-common \
+          libopencl-clang-dev curl git llvm
 
     # Clone the DemoIccMAX repository
     - name: Clone the DemoIccMAX repository

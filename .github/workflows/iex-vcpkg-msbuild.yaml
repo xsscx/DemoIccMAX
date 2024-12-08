@@ -16,14 +16,45 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Check for msbuild in Path
+      - name: Find and Configure msbuild
         run: |
-          Write-Host "Checking if msbuild is available in the PATH..."
-          if (-not (Get-Command msbuild -ErrorAction SilentlyContinue)) {
-              Write-Error "msbuild is not available in the PATH. Please ensure Visual Studio is installed, and msbuild is added to the PATH."
+          Write-Host "Searching for msbuild..."
+          $msbuildPaths = @(
+              "$env:ProgramFiles(x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+              "$env:ProgramFiles\Microsoft Visual Studio\Installer\vswhere.exe"
+          )
+
+          # Check if vswhere.exe exists
+          foreach ($vswhere in $msbuildPaths) {
+              if (Test-Path $vswhere) {
+                  Write-Host "Using vswhere located at: $vswhere"
+                  $vswhereOutput = & $vswhere -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe | Out-String
+                  if ($vswhereOutput) {
+                      $msbuildPath = $vswhereOutput.Trim()
+                      break
+                  }
+              }
+          }
+
+          if (-not $msbuildPath) {
+              Write-Error "Could not locate msbuild using vswhere or default paths. Ensure Visual Studio is installed."
               exit 1
           }
-          Write-Host "msbuild is available in the PATH."
+
+          Write-Host "msbuild found at: $msbuildPath"
+
+          # Normalize PATH to include msbuild directory
+          $msbuildDir = Split-Path $msbuildPath
+          $env:PATH = "$msbuildDir;$env:PATH"
+          [System.Environment]::SetEnvironmentVariable('PATH', $env:PATH)
+
+          # Verify msbuild is now callable
+          if (-not (Get-Command msbuild -ErrorAction SilentlyContinue)) {
+              Write-Error "msbuild is still not callable after updating PATH."
+              exit 1
+          }
+
+          Write-Host "msbuild successfully configured and callable."
         shell: pwsh
 
       - name: Execute PowerShell Command

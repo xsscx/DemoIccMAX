@@ -30,7 +30,7 @@ jobs:
 
     - name: Configure the Build with CMake
       run: |
-        cd DemoIccMAX/Build
+        cd PatchIccMAX/Build
         cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local \
               -DCMAKE_BUILD_TYPE=Debug \
               -DCMAKE_CXX_FLAGS="-g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall" \
@@ -38,8 +38,8 @@ jobs:
 
     - name: Build Project with Make and Log Output
       run: |
-        cd DemoIccMAX/Build
-        make -j8 > ../../build.log 2>&1 || true  # Log all output to build.log
+        cd PatchIccMAX/Build
+        make > ../../build.log 2>&1 || true  # Log all output to build.log
 
     - name: Check Build Success
       run: |
@@ -51,26 +51,20 @@ jobs:
         fi
 
     - name: Create Artifact Directory
-      run: mkdir -p DemoIccMAX/Build/artifact
+      run: mkdir -p PatchIccMAX/Build/artifact
 
     - name: Move Libraries and Binaries to Artifact Directory
       run: |
-        find DemoIccMAX/Build/ -type f \( -name '*.lib' -o -name '*.a' -o -name '*.so' -o -name '*.dll' -o -name 'a.out' -o -executable \) -exec mv {} DemoIccMAX/Build/artifact/ \;
-
-    - name: Clean Target Directory Before Moving Artifacts
-      run: |
-        if [ -d "DemoIccMAX-build-ubuntu-latest" ]; then
-          rm -rf DemoIccMAX-build-ubuntu-latest
-        fi
+        find PatchIccMAX/Build/ -type f \( -name '*.lib' -o -name '*.a' -o -name '*.so' -o -name '*.dll' -o -name 'a.out' -o -executable \) -exec mv {} DemoIccMAX/Build/artifact/ \;
 
     - name: Label Artifacts for Ubuntu
-      run: mv DemoIccMAX/Build/artifact DemoIccMAX-build-ubuntu-latest
+      run: mv PatchIccMAX/Build/artifact DemoIccMAX-build-ubuntu-latest
 
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: DemoIccMAX-build-ubuntu-latest
-        path: DemoIccMAX-build-ubuntu-latest/
+        name: PatchIccMAX-build-ubuntu-latest
+        path: PatchIccMAX-build-ubuntu-latest/
 
     - name: Upload Build Log
       uses: actions/upload-artifact@v4

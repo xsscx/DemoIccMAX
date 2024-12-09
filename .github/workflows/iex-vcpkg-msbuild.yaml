@@ -16,32 +16,18 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-    - name: Find MSBuild Path using vswhere
-      id: msbuild-locate
-      run: |
-        $vswherePath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
-        $msbuildPath = & $vswherePath -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
-        if (-not $msbuildPath) {
+      - name: Find MSBuild Path using vswhere
+        id: msbuild-locate
+        run: |
+          $vswherePath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+          $msbuildPath = & $vswherePath -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+          if (-not $msbuildPath) {
           Write-Error "MSBuild.exe not found"
           exit 1
-        } else {
+          } else {
           Write-Host "MSBuild found at: $msbuildPath"
-        }
-        echo "::set-output name=msbuild-path::$msbuildPath"
-
-          # Normalize PATH to include msbuild directory
-          $msbuildDir = Split-Path $msbuildPath
-          $env:PATH = "$msbuildDir;$env:PATH"
-          [System.Environment]::SetEnvironmentVariable('PATH', $env:PATH)
-
-          # Verify msbuild is callable
-          if (-not (Get-Command msbuild -ErrorAction SilentlyContinue)) {
-              Write-Error "msbuild is still not callable after updating PATH."
-              exit 1
           }
-
-          Write-Host "msbuild successfully configured and callable."
-        shell: pwsh
+          echo "::set-output name=msbuild-path::$msbuildPath"
 
       - name: Execute PowerShell Command
         run: |

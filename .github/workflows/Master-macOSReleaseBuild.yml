@@ -48,6 +48,7 @@ jobs:
         cd DemoIccMAX/Build
         make -j$(sysctl -n hw.ncpu)
         make -j$(sysctl -n hw.ncpu)
+        echo "=========  RUNNER DETAILS  ========="
         sysctl -a | grep kern.version || echo "kern.version not found"
         sysctl -a | grep kern.osversion || echo "kern.osversion not found"
         sysctl -a | grep kern.iossupportversion || echo "kern.iossupportversion not found"

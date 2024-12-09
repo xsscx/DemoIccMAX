@@ -16,40 +16,18 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Find and Configure msbuild
-        run: |
-          Write-Host "Searching for msbuild..."
-          $msbuildPaths = @(
-              "$env:ProgramFiles(x86)\Microsoft Visual Studio\Installer\vswhere.exe",
-              "$env:ProgramFiles\Microsoft Visual Studio\Installer\vswhere.exe"
-          )
-          
-          # Try to locate msbuild using vswhere
-          foreach ($vswhere in $msbuildPaths) {
-              if (Test-Path $vswhere) {
-                  Write-Host "Using vswhere located at: $vswhere"
-                  $vswhereOutput = & $vswhere -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe | Out-String
-                  if ($vswhereOutput) {
-                      $msbuildPath = $vswhereOutput.Trim()
-                      break
-                  }
-              }
-          }
-
-          # Directly check for msbuild if not found via vswhere
-          if (-not $msbuildPath) {
-              Write-Host "vswhere not found or could not locate msbuild. Attempting direct search for msbuild..."
-              $potentialMsbuild = Get-Command msbuild -ErrorAction SilentlyContinue
-              if ($potentialMsbuild) {
-                  $msbuildPath = $potentialMsbuild.Source
-                  Write-Host "msbuild found directly at: $msbuildPath"
-              } else {
-                  Write-Error "msbuild is not installed or not available in the PATH. Ensure Visual Studio is installed."
-                  exit 1
-              }
-          } else {
-              Write-Host "msbuild found via vswhere at: $msbuildPath"
-          }
+    - name: Find MSBuild Path using vswhere
+      id: msbuild-locate
+      run: |
+        $vswherePath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+        $msbuildPath = & $vswherePath -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+        if (-not $msbuildPath) {
+          Write-Error "MSBuild.exe not found"
+          exit 1
+        } else {
+          Write-Host "MSBuild found at: $msbuildPath"
+        }
+        echo "::set-output name=msbuild-path::$msbuildPath"
 
           # Normalize PATH to include msbuild directory
           $msbuildDir = Split-Path $msbuildPath

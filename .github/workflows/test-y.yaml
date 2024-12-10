@@ -1,9 +1,9 @@
 ###############################################################
 #
-## Copyright (©) 2024 David H Hoyt. All rights reserved.
+## Copyright (Â©) 2024 David H Hoyt. All rights reserved.
 ##                 https://srd.cx
 ##
-## Last Updated: 10-DEC-2024 by David Hoyt (©)
+## Last Updated: 10-DEC-2024 by David Hoyt (Â©)
 #
 ## Intent: Poll the Device and Report
 #
@@ -12,7 +12,7 @@
 #
 ###############################################################
 
-name: "TEST-Y Passthru"
+name: "XNU Runner Checks"
 
 on:
   workflow_dispatch: # Manual trigger only

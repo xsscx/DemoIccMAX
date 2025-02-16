@@ -1,9 +1,9 @@
 ###############################################################
 #
-## Copyright (©) 2024 David H Hoyt. All rights reserved.
+## Copyright (Â©) 2024 David H Hoyt. All rights reserved.
 ##                 https://srd.cx
 ##
-## Last Updated: 10-DEC-2024 by David Hoyt (©)
+## Last Updated: 10-DEC-2024 by David Hoyt (Â©)
 #
 ## Intent: Poll the Device and Report
 #
@@ -45,7 +45,7 @@ jobs:
         sudo apt-get update  
         # Check and install if packages are not installed
             sudo apt-get install -y wx-common wxwidgets libtiff6 curl git make cmake clang clang-tools libxml2 libxml2-dev nlohmann-json3-dev build-essential
-    - name: Attempt Revert
+    - name: Change dir
       run: |
         cd DemoIccMAX
     # Configure the build with CMake using scan-build

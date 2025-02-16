@@ -3,7 +3,7 @@
 ## Copyright (©) 2024 David H Hoyt. All rights reserved.
 ##                 https://srd.cx
 ##
-## Last Updated: 10-DEC-2024 by David Hoyt (©)
+## Last Updated: 16-FEB-2025 by David Hoyt (©)
 #
 ## Intent: Poll the Device and Report
 #
@@ -84,7 +84,7 @@ jobs:
 
       # Upload scan-build reports
       - name: Upload scan-build reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: scan-build-reports
           path: DemoIccMAX/Build/scan-build-reports

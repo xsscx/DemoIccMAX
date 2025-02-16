@@ -40,7 +40,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            libxml2 libxml2-dev libtiff5 libtiff5-dev nlohmann-json3-dev build-essential \
+            libxml2 libxml2-dev nlohmann-json3-dev build-essential \
             cmake libopencl-clang-17-dev wx-common \
             libopencl-clang-dev curl git llvm
 

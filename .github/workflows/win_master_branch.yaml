@@ -1,9 +1,9 @@
 ###############################################################
 #
-## Copyright (©) 2024 David H Hoyt. All rights reserved.
+## Copyright (Â©) 2024 David H Hoyt. All rights reserved.
 ##                 https://srd.cx
 ##
-## Last Updated: 10-DEC-2024 by David Hoyt (©)
+## Last Updated: 10-DEC-2024 by David Hoyt (Â©)
 #
 ## Intent: Poll the Device and Report
 #
@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
@@ -153,13 +153,13 @@ jobs:
           Get-ChildItem -Path "$RUNNER_TEMP/output"
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: PatchIccMAX-Build-Artifacts
           path: $RUNNER_TEMP/output
 
       - name: Upload build logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: PatchIccMAX-Build-Logs
           path: ${{ github.workspace }}/logs

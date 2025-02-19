@@ -126,7 +126,7 @@ jobs:
 
           $msbuildPath = "$env:MSBUILD_PATH"
           cd "${{ env.BUILD_DIR }}\PatchIccMAX"
-          & $msbuildPath .\Build\MSVC\BuildAll_v22.sln `
+          msbuild .\Build\MSVC\BuildAll_v22.sln `
               /m `
               /p:Configuration=Debug `
               /p:Platform=x64 `

@@ -3,7 +3,7 @@
 ## Copyright (©) 2024 David H Hoyt. All rights reserved.
 ##                 https://srd.cx
 ##
-## Last Updated: 16-FEB-2025 by David Hoyt (©)
+## Last Updated: 16-FEB-2025 at 1655 EST by David Hoyt (©)
 #
 ## Intent: Poll the Device and Report
 #
@@ -41,8 +41,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             libxml2 libxml2-dev nlohmann-json3-dev build-essential \
-            cmake libopencl-clang-17-dev wx-common \
-            curl git llvm
+            cmake libopencl-clang-17-dev libwxgtk3.2-dev libtiff-dev \
+            curl git llvm clang-tools clang-17
+
+      # Ensure scan-build is in PATH
+      - name: Ensure scan-build is installed and accessible
+        run: |
+          export PATH="/usr/lib/llvm-17/bin:$PATH"
+          which scan-build || echo "❌ scan-build not found"
+          scan-build --version || echo "❌ scan-build version check failed"
 
       # Clone the DemoIccMAX repository
       - name: Clone the DemoIccMAX repository
@@ -73,12 +80,14 @@ jobs:
           cd DemoIccMAX/Build
           export CC=clang
           export CXX=clang++
+          export PATH="/usr/lib/llvm-17/bin:$PATH"
           scan-build cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Release -Wno-dev Cmake/
 
       # Run scan-build for static analysis
       - name: Run scan-build for static analysis
         run: |
           cd DemoIccMAX/Build
+          export PATH="/usr/lib/llvm-17/bin:$PATH"
           scan-build --status-bugs --keep-going -o scan-build-reports make -j$(nproc) || true
         continue-on-error: true  # Allow the step to complete even if issues are found
 

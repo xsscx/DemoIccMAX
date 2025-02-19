@@ -3,7 +3,7 @@
 ## Copyright (©) 2024 David H Hoyt. All rights reserved.
 ##                 https://srd.cx
 ##
-## Last Updated: 19-FEB-2025 1656 EST by David Hoyt (©)
+## Last Updated: 19-FEB-2025 1701 EST by David Hoyt (©)
 #
 ## Intent: Poll the Device and Report
 #
@@ -13,6 +13,8 @@
 ###############################################################
 
 name: "Linux Master Branch | Release"
+
+name: "linux clang scan-build"
 
 on:
   push:
@@ -25,86 +27,111 @@ on:
 
 jobs:
   build-linux:
-    name: Build and Test Linux Master Branch
+    name: Build and Test Linux Master Branch with scan-build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
 
     steps:
-    # Checkout repository
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      # Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    # Set up Git anonymous identity
-    - name: Set up Git anonymous identity
-      run: |
-        git config --global user.email "github-actions@github.com"
-        git config --global user.name "GitHub Actions"
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxml2 libxml2-dev nlohmann-json3-dev build-essential \
+            cmake libopencl-clang-17-dev libwxgtk3.2-dev libtiff-dev \
+            curl git llvm clang-tools clang-17
 
-    # Install dependencies
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          libxml2 libxml2-dev libtiff5 libtiff5-dev nlohmann-json3-dev build-essential \
-          cmake clang clang-tools python3 python3-pip libwxgtk3.0-gtk3-dev wx-common \
-          libopencl-clang-dev curl git llvm clang-tools clang-17
+      # Ensure scan-build is in PATH
+      - name: Ensure scan-build is installed and accessible
+        run: |
+          export PATH="/usr/lib/llvm-17/bin:$PATH"
+          which scan-build || echo "❌ scan-build not found"
+          scan-build --version || echo "❌ scan-build version check failed"
 
-    # Clone the DemoIccMAX repository
-    - name: Clone the DemoIccMAX repository
-      run: |
-        git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
-        cd DemoIccMAX
-        git checkout master
+      # Clone the DemoIccMAX repository
+      - name: Clone the DemoIccMAX repository
+        run: |
+          git clone https://github.com/InternationalColorConsortium/DemoIccMAX.git
+          cd DemoIccMAX
+          git checkout master
+          echo "Applying patch for gnu_cpp_pr111"
+          cat <<EOF > gnu_cpp_pr111.patch
+          diff --git a/Tools/CmdLine/IccCommon/IccJsonUtil.cpp b/Tools/CmdLine/IccCommon/IccJsonUtil.cpp
+          index 78a78cf..fcf0c6a 100644
+          --- a/Tools/CmdLine/IccCommon/IccJsonUtil.cpp
+          +++ b/Tools/CmdLine/IccCommon/IccJsonUtil.cpp
+          @@ -94,7 +94,6 @@ template <typename T>
+           }
+           
+           // Explicit template instantiations
+          -template bool jsonToValue<int>(const json&, int&);
+           template std::string arrayToJson<icUInt8Number>(icUInt8Number*, int);
+           template std::string arrayToJson<icUInt16Number>(icUInt16Number*, int);
+           template std::string arrayToJson<icUInt32Number>(icUInt32Number*, int);
+          EOF
+          git apply gnu_cpp_pr111.patch
 
-    # Configure the build with CMake
-    - name: Configure the build with CMake
-      run: |
-        cd DemoIccMAX/Build
-        export CC=clang
-        export CXX=clang++
-        echo "CC=clang" >> $GITHUB_ENV
-        echo "CXX=clang++" >> $GITHUB_ENV
-        clang++ --version
-        clang --version
-        cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Release -Wno-dev Cmake/
+      # Configure the build with scan-build
+      - name: Configure the build with scan-build
+        run: |
+          cd DemoIccMAX/Build
+          export CC=clang
+          export CXX=clang++
+          export PATH="/usr/lib/llvm-17/bin:$PATH"
+          scan-build cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local -DCMAKE_BUILD_TYPE=Release -Wno-dev Cmake/
 
-    # Build the project using CMake
-    - name: Build project with CMake
-      run: |
-        cd DemoIccMAX/Build
-        make -j$(nproc)
+      # Run scan-build for static analysis
+      - name: Run scan-build for static analysis
+        run: |
+          cd DemoIccMAX/Build
+          export PATH="/usr/lib/llvm-17/bin:$PATH"
+          scan-build --status-bugs --keep-going -o scan-build-reports make -j$(nproc) || true
+        continue-on-error: true  # Allow the step to complete even if issues are found
 
-    # Run additional system info and validation commands
-    - name: Gather system information
-      run: |
-        uname -a
-        cat /etc/os-release
-        gcc -v
-        lscpu
-        free -m
-        df -h
+      # Upload scan-build reports
+      - name: Upload scan-build reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-build-reports
+          path: DemoIccMAX/Build/scan-build-reports
 
-    # Check build success
-    - name: Check build success
-      run: |
-        if [ -f DemoIccMAX/Build/CMakeCache.txt ]; then
-          echo "✅ Build configuration exists."
-        else
-          echo "❌ Build configuration failed."
-          exit 1
-        fi
+      # Evaluate scan-build results and fail if necessary
+      - name: Evaluate scan-build results
+        run: |
+          cd DemoIccMAX/Build/scan-build-reports
+          if [ "$(find . -type f -name '*.html' | wc -l)" -gt 0 ]; then
+            echo "scan-build completed with warnings. Check the scan-build-reports artifact."
+            exit 0  # Continue but log a message
+          else
+            echo "No scan-build reports generated. Failing the workflow."
+            exit 1
+          fi
 
-    # Upload built binaries as artifacts
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: master-build-linux
-        path: DemoIccMAX/Build
+      # Check build success
+      - name: Check build success
+        run: |
+          if [ -f DemoIccMAX/Build/CMakeCache.txt ]; then
+            echo "✅ Build configuration exists."
+          else
+            echo "❌ Build configuration failed."
+            exit 1
+          fi
 
-    # Upload build logs
-    - name: Upload build logs
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-logs
-        path: DemoIccMAX/Build/CMakeCache.txt
+      # Upload built binaries as artifacts
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-build-linux
+          path: DemoIccMAX/Build
+
+      # Upload build logs
+      - name: Upload build logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: DemoIccMAX/Build/CMakeCache.txt

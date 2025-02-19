@@ -33,7 +33,7 @@ jobs:
     steps:
     # Checkout repository
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     # Set up Git anonymous identity
     - name: Set up Git anonymous identity
@@ -97,14 +97,14 @@ jobs:
 
     # Upload built binaries as artifacts
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: master-build-linux
         path: DemoIccMAX/Build
 
     # Upload build logs
     - name: Upload build logs
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: build-logs
         path: DemoIccMAX/Build/CMakeCache.txt

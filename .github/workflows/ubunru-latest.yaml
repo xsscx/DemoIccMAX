@@ -12,8 +12,6 @@
 #
 ###############################################################
 
-name: "Linux Master Branch | Release"
-
 name: "linux clang scan-build"
 
 on:

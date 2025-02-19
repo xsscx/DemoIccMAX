@@ -46,9 +46,16 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y \
-          libxml2 libxml2-dev libtiff5 libtiff5-dev nlohmann-json3-dev build-essential \
-          cmake clang clang-tools python3 python3-pip libwxgtk3.0-gtk3-dev wx-common \
-          libopencl-clang-dev curl git llvm clang-tools
+          libxml2 libxml2-dev libtiff-dev nlohmann-json3-dev build-essential \
+          cmake clang clang-tools python3 python3-pip libwxgtk3.2-dev wx-common \
+          libopencl-clang-17-dev curl git llvm clang-17
+
+    # Ensure scan-build is installed and accessible
+    - name: Validate scan-build installation
+      run: |
+        export PATH="/usr/lib/llvm-17/bin:$PATH"
+        which scan-build || echo "❌ scan-build not found"
+        scan-build --version || echo "❌ scan-build version check failed"
 
     # Clone the DemoIccMAX repository
     - name: Clone the DemoIccMAX repository
@@ -63,6 +70,7 @@ jobs:
         cd DemoIccMAX/Build
         export CC=clang
         export CXX=clang++
+        export PATH="/usr/lib/llvm-17/bin:$PATH"
         echo "CC=clang" >> $GITHUB_ENV
         echo "CXX=clang++" >> $GITHUB_ENV
         clang++ --version

@@ -1,0 +1,144 @@
+name: WinReduxLatest
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      BuildConfiguration: Debug
+      BUILD_DIR: ${{ github.workspace }}/builds  # Ensure 'builds' directory exists
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
+
+    - name: Setup vcpkg and dependencies
+      run: |
+        $buildDir = "${{ env.BUILD_DIR }}"
+        $vcpkgDir = "$env:RUNNER_TEMP/vcpkg"
+        $outputDir = "$env:RUNNER_TEMP/output"
+
+        # Create necessary directories
+        New-Item -ItemType Directory -Path $buildDir -Force
+        New-Item -ItemType Directory -Path $outputDir -Force
+
+        # Ensure vcpkg is installed
+        if (-Not (Test-Path "$vcpkgDir\installed")) {
+            Write-Host "Cloning vcpkg..."
+            git clone https://github.com/microsoft/vcpkg.git $vcpkgDir
+            cd $vcpkgDir
+            .\bootstrap-vcpkg.bat
+        }
+
+        # Install required libraries using vcpkg
+        cd $vcpkgDir
+        .\vcpkg.exe integrate install
+        .\vcpkg.exe install `
+          egl-registry:x64-windows-static `
+          vcpkg-cmake:x64-windows-static `
+          vcpkg-cmake-config:x64-windows-static `
+          nlohmann-json:x64-windows `
+          nlohmann-json:x64-windows-static `
+          libxml2:x64-windows `
+          tiff:x64-windows `
+          wxwidgets:x64-windows `
+          libxml2:x64-windows-static `
+          tiff:x64-windows-static `
+          wxwidgets:x64-windows-static `
+          --debug
+        Write-Host "vcpkg libraries installed successfully"
+
+    - name: Clone PatchIccMAX Repository
+      run: |
+        $buildDir = "${{ env.BUILD_DIR }}"
+        if (Test-Path "$buildDir\PatchIccMAX") {
+            Write-Host "PatchIccMAX repository already exists. Pulling latest changes..."
+            cd "$buildDir\PatchIccMAX"
+            git pull
+        } else {
+            Write-Host "Cloning PatchIccMAX repository..."
+            git clone https://github.com/xsscx/PatchIccMAX.git "$buildDir\PatchIccMAX"
+        }
+
+    - name: Find MSBuild Path using vswhere
+      id: msbuild-locate
+      run: |
+        $vswherePath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+        $msbuildPath = & $vswherePath -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+        if (-not $msbuildPath) {
+          Write-Error "MSBuild.exe not found"
+          exit 1
+        }
+        Write-Host "MSBuild found at: $msbuildPath"
+        echo "MSBUILD_PATH=$msbuildPath" >> $env:GITHUB_ENV
+
+    - name: Verify solution file and build the project
+      run: |
+        $solutionPath = "${{ env.BUILD_DIR }}\PatchIccMAX\Build\MSVC\BuildAll_v22.sln"
+        if (!(Test-Path $solutionPath)) {
+            Write-Error "Solution file does not exist: $solutionPath"
+            Get-ChildItem -Path "${{ env.BUILD_DIR }}\PatchIccMAX\Build\MSVC"
+            exit 1
+        }
+        Write-Host "Solution file found: $solutionPath"
+
+        # Build the project using the dynamically located MSBuild
+        & $env:MSBUILD_PATH $solutionPath `
+            /m `
+            /p:Configuration=Debug `
+            /p:Platform=x64 `
+            /p:AdditionalIncludeDirectories="$env:RUNNER_TEMP/vcpkg/installed/x64-windows/include" `
+            /p:AdditionalLibraryDirectories="$env:RUNNER_TEMP/vcpkg/installed/x64-windows/lib" `
+            /p:CLToolAdditionalOptions="/fsanitize=address /Zi /Od /DDEBUG /W4" `
+            /p:LinkToolAdditionalOptions="/fsanitize=address /DEBUG /INCREMENTAL:NO"
+
+    - name: Apply Library Fixups
+      run: |
+        Write-Host "Applying Fixups for libraries..."
+        $libPath = "$env:RUNNER_TEMP/vcpkg/installed/x64-windows/lib"
+        if (Test-Path "$libPath\tiff.lib") {
+            Copy-Item -Path "$libPath\tiff.lib" -Destination "$libPath\libtiff.lib"
+        }
+        $libStaticPath = "$env:RUNNER_TEMP/vcpkg/installed/x64-windows-static/lib"
+        if (Test-Path "$libStaticPath\tiff.lib") {
+            Copy-Item -Path "$libStaticPath\tiff.lib" -Destination "$libStaticPath\libtiff.lib"
+        }
+        Write-Host "Library Fixups Applied."
+
+    - name: Set Environment Variables for Testing
+      run: |
+        Write-Host "Adding $env:PATH = $env:RUNNER_TEMP/vcpkg/installed/x64-windows/bin"
+        $env:PATH = "$env:RUNNER_TEMP/vcpkg/installed/x64-windows/bin;" + $env:PATH
+
+    - name: Copy Build Artifacts to Output
+      run: |
+        $buildDir = "${{ env.BUILD_DIR }}\PatchIccMAX"
+        $outputDir = "$env:RUNNER_TEMP/output"
+        Get-ChildItem -Path $buildDir -Recurse -Include *.exe, *.dll, *.lib | Copy-Item -Destination $outputDir -Force
+
+    - name: List files in the output directory
+      run: |
+        Write-Host "Listing files in the output directory:"
+        Get-ChildItem -Path "$env:RUNNER_TEMP/output"
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: PatchIccMAX-Build-Artifacts
+        path: $env:RUNNER_TEMP/output
+
+    - name: Upload Build Logs (Optional)
+      uses: actions/upload-artifact@v4
+      with:
+        name: PatchIccMAX-Build-Logs
+        path: ${{ github.workspace }}/logs

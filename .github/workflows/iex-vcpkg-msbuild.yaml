@@ -1,9 +1,9 @@
 ###############################################################
 #
-## Copyright (©) 2024 David H Hoyt. All rights reserved.
+## Copyright (Â©) 2024 David H Hoyt. All rights reserved.
 ##                 https://srd.cx
 ##
-## Last Updated: 10-DEC-2024 by David Hoyt (©)
+## Last Updated: 19-FEB-2025 1928 EST by David Hoyt (Â©)
 #
 ## Intent: Poll the Device and Report
 #
@@ -12,7 +12,7 @@
 #
 ###############################################################
 
-name: iex master
+name: iex-2master
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
       BUILD_DIR: ${{ github.workspace }}/builds  # Define BUILD_DIR environment variable
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Find MSBuild Path using vswhere
         id: msbuild-locate
@@ -122,13 +122,13 @@ jobs:
         shell: pwsh
 
       - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: PatchIccMAX-Build-Artifacts
           path: $RUNNER_TEMP/output
 
       - name: Upload Build Logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: PatchIccMAX-Build-Logs
           path: ${{ github.workspace }}/logs
